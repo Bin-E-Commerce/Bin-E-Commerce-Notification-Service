@@ -13,7 +13,7 @@ async function bootstrap(): Promise<void> {
   app.getHttpAdapter().getInstance().set("trust proxy", 1);
 
   const config = app.get(ConfigService);
-  const port = config.get<number>("PORT", 3006);
+  const port = config.get<number>("PORT", 3005);
   const brokers = config
     .get<string>("KAFKA_BROKERS", "localhost:9092")
     .split(",")

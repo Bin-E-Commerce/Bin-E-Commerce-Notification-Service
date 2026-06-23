@@ -6,6 +6,7 @@ import { TerminusModule } from "@nestjs/terminus";
 import { EmailModule } from "./modules/email/email.module";
 import { HealthModule } from "./modules/health/health.module";
 import { OtpConsumer } from "./kafka/consumers/otp.consumer";
+import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.consumer";
 
 @Module({
   imports: [
@@ -27,6 +28,6 @@ import { OtpConsumer } from "./kafka/consumers/otp.consumer";
     EmailModule,
     HealthModule,
   ],
-  controllers: [OtpConsumer],
+  controllers: [OtpConsumer, SellerApplicationConsumer],
 })
 export class AppModule {}

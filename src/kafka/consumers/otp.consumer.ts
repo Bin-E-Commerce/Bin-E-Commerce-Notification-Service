@@ -3,7 +3,7 @@ import { EventPattern, Payload } from "@nestjs/microservices";
 import {
   NotificationEvents,
   OtpRequestedPayload,
-} from "@common/kafka/events/notification.events";
+} from "@common/kafka/events";
 import { EmailService } from "../../modules/email/email.service";
 
 // Nhận OTP request từ Kafka và gửi email OTP tương ứng
