@@ -27,6 +27,7 @@ export class SellerApplicationConsumer {
         payload.email,
         payload.shopName,
         payload.applicationId,
+        payload.submittedAt,
       );
     } catch (err) {
       this.logger.error(
