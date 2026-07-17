@@ -6,6 +6,7 @@ import * as nodemailer from "nodemailer";
 import type { SendMailOptions, Transporter } from "nodemailer";
 import { buildOtpTemplate } from "./templates/otp.template";
 import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-application-submitted.template";
+import { buildSellerApplicationRejectedTemplate } from "./templates/seller-application-rejected.template";
 
 @Injectable()
 export class EmailService {
@@ -106,6 +107,48 @@ export class EmailService {
     } catch (err) {
       this.logger.error(
         `Failed to send seller application email to ${to}: ${String(err)}`,
+      );
+      throw err;
+    }
+  }
+
+  // Gửi lý do hồ sơ chưa đạt và đường dẫn quay lại onboarding để seller có thể sửa dữ liệu rồi gửi duyệt lần nữa.
+  async sendSellerApplicationRejectedEmail(
+    to: string,
+    shopName: string,
+    applicationId: string,
+    reviewedAt: string,
+    reviewNote: string,
+    correctionTargets: string[],
+  ): Promise<void> {
+    // Đảm bảo URL an toàn và không bị tiêm mã độc vào email.
+    const attachments = this.buildBrandAttachments();
+
+    // Chuyển đổi các giá trị đầu vào thành định dạng an toàn để tránh tiêm mã độc vào email.
+    const template = buildSellerApplicationRejectedTemplate({
+      shopName,
+      applicationId,
+      reviewedAt,
+      reviewNote,
+      correctionTargets,
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+
+    // Gửi email với nội dung đã được xây dựng từ template.
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+        attachments,
+      });
+      this.logger.log(`Seller rejection email sent to ${to}`);
+    } catch (err) {
+      this.logger.error(
+        `Failed to send seller rejection email to ${to}: ${String(err)}`,
       );
       throw err;
     }
