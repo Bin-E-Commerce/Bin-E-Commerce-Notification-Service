@@ -28,7 +28,11 @@ async function bootstrap(): Promise<void> {
         brokers,
       },
       consumer: {
-        groupId: "notification-service",
+        // Group ID cấu hình theo deployment để production instances chia tải, còn smoke test có thể dùng group riêng không ảnh hưởng offset thật.
+        groupId: config.get<string>(
+          "KAFKA_GROUP_ID",
+          "notification-service",
+        ),
       },
     },
   });

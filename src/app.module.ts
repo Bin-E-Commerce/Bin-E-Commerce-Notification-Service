@@ -7,6 +7,8 @@ import { EmailModule } from "./modules/email/email.module";
 import { HealthModule } from "./modules/health/health.module";
 import { OtpConsumer } from "./kafka/consumers/otp.consumer";
 import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.consumer";
+import { RedisModule } from "./infrastructure/redis/redis.module";
+import { NotificationsModule } from "./modules/notifications/notifications.module";
 
 @Module({
   imports: [
@@ -25,7 +27,9 @@ import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.
     }),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     TerminusModule,
+    RedisModule,
     EmailModule,
+    NotificationsModule,
     HealthModule,
   ],
   controllers: [OtpConsumer, SellerApplicationConsumer],
