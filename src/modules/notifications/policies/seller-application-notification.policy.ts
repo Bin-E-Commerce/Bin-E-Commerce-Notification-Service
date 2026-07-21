@@ -81,6 +81,38 @@ export class SellerApplicationNotificationPolicy {
     };
   }
 
+  // Tạo notification riêng cho seller khi hồ sơ đạt để badge và CTA dẫn thẳng vào khu vực vận hành shop.
+  buildApproved(
+    event: SellerApplicationReviewedEvent,
+  ): CreateNotificationInput {
+    return {
+      eventId: event.eventId,
+      eventName: event.eventName,
+      eventVersion: event.eventVersion,
+      source: event.source,
+      category: NotificationCategory.SELLER_APPLICATION,
+      type: "seller_application_approved",
+      audiences: [
+        {
+          type: NotificationAudienceType.USER,
+          value: event.data.userId,
+        },
+      ],
+      title: "Hồ sơ người bán đã được duyệt",
+      message: `${event.data.shopName} đã sẵn sàng truy cập Seller Center.`,
+      actionUrl: "/seller",
+      badgeKey: "seller.application_status",
+      priority: NotificationPriority.HIGH,
+      entityType: "seller_application",
+      entityId: event.data.applicationId,
+      metadata: {
+        submissionRevision: event.data.submissionRevision,
+      },
+      occurredAt: new Date(event.occurredAt),
+      expiresAt: this.createExpiryDate(event.occurredAt),
+    };
+  }
+
   // Tính TTL từ thời điểm event để retry trễ không vô tình kéo dài thời gian lưu notification.
   private createExpiryDate(occurredAt: string): Date {
     const expiresAt = new Date(occurredAt);

@@ -77,4 +77,31 @@ export class SellerApplicationConsumer {
       );
     }
   }
+
+  // Lưu thông báo duyệt thành công trước khi gửi email để seller vẫn thấy kết quả trong ứng dụng nếu SMTP tạm lỗi.
+  @EventPattern(SellerEvents.APPLICATION_APPROVED)
+  async handleSellerApplicationApproved(
+    @Payload() event: SellerApplicationReviewedEvent,
+  ): Promise<void> {
+    this.logger.log(
+      `Received seller application approved event ${event.eventId}`,
+    );
+
+    await this.notifications.createFromEvent(this.policy.buildApproved(event));
+
+    try {
+      await this.emailService.sendSellerApplicationApprovedEmail(
+        event.data.email,
+        event.data.shopName,
+        event.data.applicationId,
+        event.data.reviewedAt,
+      );
+    } catch (err) {
+      this.logger.error(
+        `Failed to send seller approval email to ${event.data.email}: ${String(
+          err,
+        )}`,
+      );
+    }
+  }
 }

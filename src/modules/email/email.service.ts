@@ -7,6 +7,7 @@ import type { SendMailOptions, Transporter } from "nodemailer";
 import { buildOtpTemplate } from "./templates/otp.template";
 import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-application-submitted.template";
 import { buildSellerApplicationRejectedTemplate } from "./templates/seller-application-rejected.template";
+import { buildSellerApplicationApprovedTemplate } from "./templates/seller-application-approved.template";
 
 @Injectable()
 export class EmailService {
@@ -149,6 +150,40 @@ export class EmailService {
     } catch (err) {
       this.logger.error(
         `Failed to send seller rejection email to ${to}: ${String(err)}`,
+      );
+      throw err;
+    }
+  }
+
+  // Gửi xác nhận hồ sơ đã được duyệt và dẫn người dùng vào Seller Center bằng email có nhận diện thương hiệu.
+  async sendSellerApplicationApprovedEmail(
+    to: string,
+    shopName: string,
+    applicationId: string,
+    reviewedAt: string,
+  ): Promise<void> {
+    const attachments = this.buildBrandAttachments();
+    const template = buildSellerApplicationApprovedTemplate({
+      shopName,
+      applicationId,
+      reviewedAt,
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+        attachments,
+      });
+      this.logger.log(`Seller approval email sent to ${to}`);
+    } catch (err) {
+      this.logger.error(
+        `Failed to send seller approval email to ${to}: ${String(err)}`,
       );
       throw err;
     }
