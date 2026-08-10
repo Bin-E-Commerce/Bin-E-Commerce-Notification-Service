@@ -151,14 +151,18 @@ export class NotificationsService {
     );
   }
 
-  // Mark-all tạo receipt theo bulkWrite để giảm round-trip; category cho phép chỉ dọn một nhóm thông báo nếu cần.
+  // Mark-all tạo receipt theo bulkWrite để giảm round-trip; các filter giúp dọn đúng nhóm notification mà người dùng vừa mở.
   async markAllRead(
     viewer: NotificationViewer,
-    category?: NotificationCategory,
+    filters: {
+      category?: NotificationCategory;
+      badgeKey?: string;
+    } = {},
   ): Promise<number> {
     const filter: FilterQuery<Notification> = {
       ...this.audienceService.buildFilter(viewer),
-      ...(category ? { category } : {}),
+      ...(filters.category ? { category: filters.category } : {}),
+      ...(filters.badgeKey ? { badgeKey: filters.badgeKey } : {}),
     };
     const notifications = await this.notificationModel
       .find(filter)

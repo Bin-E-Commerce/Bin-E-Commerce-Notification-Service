@@ -55,7 +55,7 @@ export class NotificationsController {
     return { data: null, message: "Đã đánh dấu thông báo là đã đọc.", statusCode: 200 };
   }
 
-  // Mark-all hỗ trợ category để các Notification Center tương lai có thể dọn riêng từng nhóm.
+  // Mark-all nhận bộ lọc category hoặc badgeKey để FE có thể dọn toàn bộ chuông hoặc riêng badge của menu vừa mở.
   @Post("read-all")
   @HttpCode(200)
   async markAllRead(
@@ -64,7 +64,10 @@ export class NotificationsController {
   ) {
     const updated = await this.notifications.markAllRead(
       this.viewers.fromHeaders(headers),
-      dto.category,
+      {
+        category: dto.category,
+        badgeKey: dto.badgeKey,
+      },
     );
     return {
       data: { updated },
