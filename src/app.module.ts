@@ -7,6 +7,7 @@ import { EmailModule } from "./modules/email/email.module";
 import { HealthModule } from "./modules/health/health.module";
 import { OtpConsumer } from "./kafka/consumers/otp.consumer";
 import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.consumer";
+import { ShopProfileChangeRequestConsumer } from "./kafka/consumers/shop-profile-change-request.consumer";
 import { RedisModule } from "./infrastructure/redis/redis.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 
@@ -32,6 +33,10 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
     NotificationsModule,
     HealthModule,
   ],
-  controllers: [OtpConsumer, SellerApplicationConsumer],
+  controllers: [
+    OtpConsumer,
+    SellerApplicationConsumer,
+    ShopProfileChangeRequestConsumer,
+  ],
 })
 export class AppModule {}

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { NotificationsController } from "./controllers/notifications.controller";
 import { SellerApplicationNotificationPolicy } from "./policies/seller-application-notification.policy";
+import { ShopProfileChangeRequestNotificationPolicy } from "./policies/shop-profile-change-request-notification.policy";
 import {
   Notification,
   NotificationSchema,
@@ -29,7 +30,12 @@ import { NotificationsService } from "./services/notifications.service";
     NotificationViewerService,
     NotificationRealtimePublisherService,
     SellerApplicationNotificationPolicy,
+    ShopProfileChangeRequestNotificationPolicy,
   ],
-  exports: [NotificationsService, SellerApplicationNotificationPolicy],
+  exports: [
+    NotificationsService,
+    SellerApplicationNotificationPolicy,
+    ShopProfileChangeRequestNotificationPolicy,
+  ],
 })
 export class NotificationsModule {}
