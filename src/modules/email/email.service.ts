@@ -1,3 +1,6 @@
+// Service này quản lý SMTP transport, branding và việc gửi các template email của hệ thống.
+// Nó không tự quyết định audience; consumer phải truyền recipient đã được xác định từ event nghiệp vụ.
+
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { existsSync } from "node:fs";
@@ -8,6 +11,12 @@ import { buildOtpTemplate } from "./templates/otp.template";
 import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-application-submitted.template";
 import { buildSellerApplicationRejectedTemplate } from "./templates/seller-application-rejected.template";
 import { buildSellerApplicationApprovedTemplate } from "./templates/seller-application-approved.template";
+import {
+  buildOrderCancelledTemplate,
+  buildOrderCreatedTemplate,
+  type OrderEmailItem,
+  type OrderEmailRole,
+} from "./templates/order.template";
 
 @Injectable()
 export class EmailService {
@@ -77,6 +86,52 @@ export class EmailService {
       this.logger.error(`Failed to send OTP email to ${to}: ${String(err)}`);
       throw err;
     }
+  }
+
+  // Gửi email order mới cho customer hoặc seller; nội dung được chọn theo role nhưng dùng chung transport và branding.
+  async sendOrderCreatedEmail(input: {
+    to: string;
+    orderNumber: string;
+    role: OrderEmailRole;
+    orderUrl: string;
+    totalAmount: string;
+    createdAt: string;
+    itemCount?: number;
+    shopItemTotal?: string;
+    items?: OrderEmailItem[];
+  }): Promise<void> {
+    const attachments = this.buildBrandAttachments();
+    const template = buildOrderCreatedTemplate({
+      ...input,
+      orderUrl: this.toWebUrl(input.orderUrl),
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+    await this.sendTemplateEmail(input.to, template, "order created", attachments);
+  }
+
+  // Gửi email hủy đơn cho customer hoặc seller và giữ nguyên lý do snapshot từ Order Service.
+  async sendOrderCancelledEmail(input: {
+    to: string;
+    orderNumber: string;
+    role: OrderEmailRole;
+    orderUrl: string;
+    totalAmount: string;
+    createdAt: string;
+    cancelledAt: string;
+    cancelReason: string | null;
+    itemCount?: number;
+    shopItemTotal?: string;
+    items?: OrderEmailItem[];
+  }): Promise<void> {
+    const attachments = this.buildBrandAttachments();
+    const template = buildOrderCancelledTemplate({
+      ...input,
+      orderUrl: this.toWebUrl(input.orderUrl),
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+    await this.sendTemplateEmail(input.to, template, "order cancelled", attachments);
   }
 
   // Gửi email xác nhận hồ sơ người bán đã được gửi và đang chờ đội ngũ vận hành duyệt.
@@ -206,5 +261,34 @@ export class EmailService {
         contentDisposition: "inline",
       },
     ];
+  }
+
+  // Gửi template đã render và log theo loại email; lỗi được ném lên consumer để consumer ghi nhận recipient lỗi.
+  private async sendTemplateEmail(
+    to: string,
+    template: { subject: string; html: string; text: string },
+    label: string,
+    attachments: NonNullable<SendMailOptions["attachments"]>,
+  ): Promise<void> {
+    try {
+      await this.transporter.sendMail({
+        from: this.from,
+        to,
+        subject: template.subject,
+        html: template.html,
+        text: template.text,
+        attachments,
+      });
+      this.logger.log(`${label} email sent to ${to}`);
+    } catch (err) {
+      this.logger.error(`Failed to send ${label} email to ${to}: ${String(err)}`);
+      throw err;
+    }
+  }
+
+  // Chuẩn hóa CTA tương đối của event thành URL tuyệt đối để email client mở được đúng frontend.
+  private toWebUrl(path: string): string {
+    if (/^https?:\/\//i.test(path)) return path;
+    return `${this.webBaseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
   }
 }

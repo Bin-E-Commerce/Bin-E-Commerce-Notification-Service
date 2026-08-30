@@ -1,3 +1,6 @@
+// Template này dựng khung HTML dùng chung cho mọi email của Bin E-Commerce.
+// Layout chỉ chịu trách nhiệm trình bày và branding, không chứa nội dung nghiệp vụ của từng sự kiện.
+
 import { escapeEmailHtml } from "../utils/email-html.util";
 
 interface EmailLayoutInput {
@@ -26,9 +29,6 @@ export function renderEmailLayout(input: EmailLayoutInput): string {
       <tr>
         <td align="center" style="padding:32px 16px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:640px;background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;">
-            <tr>
-              <td style="height:6px;background:#18181b;font-size:0;line-height:0;">&nbsp;</td>
-            </tr>
             <tr>
               <td style="background:#ffffff;padding:18px 28px;border-bottom:1px solid #e4e4e7;">${brand}</td>
             </tr>

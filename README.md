@@ -2,7 +2,7 @@
 
 # Notification Service
 
-### Sends account OTP emails reliably after auth events are published to Kafka.
+### Sends account and order emails reliably after domain events are published to Kafka.
 
 [Overview](#overview) · [Quick Start](#quick-start) · [Configuration](#configuration) · [Architecture](#architecture) · [API](#api)
 
@@ -20,8 +20,9 @@ It is part of the Bin E-Commerce microservice system and is built with NestJS 11
 
 ## What It Does
 
-- Consumes `notification.otp-requested` Kafka events.
+- Consumes `notification.otp-requested`, `order.created`, and `order.cancelled` Kafka events.
 - Sends OTP emails for registration, reset-password, and login verification flows.
+- Creates in-app notifications and sends order emails to the customer and each related seller.
 - Exposes `GET /api/health` for Docker and orchestration health checks.
 - Enables Swagger documentation outside production at `/docs`.
 - Keeps SMTP configuration in environment variables instead of source code.
@@ -100,6 +101,8 @@ Create `.env` from `.env.example` and fill in environment-specific values.
 | `SMTP_PORT` | No | `587` | SMTP port. Use `465` for secure SMTP. |
 | `SMTP_USER` | Yes | none | SMTP username and sender email. |
 | `SMTP_PASSWORD` | Yes | none | SMTP password or app password. |
+| `AUTH_SERVICE_URL` | No | `http://localhost:3002` | Auth Service endpoint used to resolve recipient email addresses. |
+| `INTERNAL_SERVICE_TOKEN` | Yes for order emails | none | Must match Auth Service internal token. |
 
 ---
 

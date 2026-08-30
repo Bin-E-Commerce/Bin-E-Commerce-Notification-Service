@@ -1,3 +1,6 @@
+// File này lắp dependency graph của Notification Service, gồm Kafka consumers, Mongo persistence, realtime và email.
+// AppModule không chứa logic nghiệp vụ; các policy/service chuyên trách giữ boundary của từng loại thông báo.
+
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
@@ -8,8 +11,10 @@ import { HealthModule } from "./modules/health/health.module";
 import { OtpConsumer } from "./kafka/consumers/otp.consumer";
 import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.consumer";
 import { ShopProfileChangeRequestConsumer } from "./kafka/consumers/shop-profile-change-request.consumer";
+import { OrderConsumer } from "./kafka/consumers/order.consumer";
 import { RedisModule } from "./infrastructure/redis/redis.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { AuthUserEmailClient } from "./integrations/auth-user-email.client";
 
 @Module({
   imports: [
@@ -37,6 +42,8 @@ import { NotificationsModule } from "./modules/notifications/notifications.modul
     OtpConsumer,
     SellerApplicationConsumer,
     ShopProfileChangeRequestConsumer,
+    OrderConsumer,
   ],
+  providers: [AuthUserEmailClient],
 })
 export class AppModule {}
