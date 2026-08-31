@@ -1,6 +1,9 @@
-import type { EmailTemplate } from "../types/email-template.type";
-import { escapeEmailHtml } from "../utils/email-html.util";
-import { renderEmailLayout } from "./email-layout.template";
+// Template này tạo email xác thực tài khoản và dùng layout branding chung của Notification Service.
+// Template chỉ render dữ liệu OTP đã được service chuẩn hóa, không tự gửi email hoặc lưu mã xác thực.
+
+import type { EmailTemplate } from "../../types/email-template.type";
+import { escapeEmailHtml } from "../../utils/email-html.util";
+import { renderEmailLayout } from "../common/email-layout.template";
 
 interface OtpTemplateInput {
   otp: string;

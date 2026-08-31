@@ -1,7 +1,7 @@
 // Template này dựng khung HTML dùng chung cho mọi email của Bin E-Commerce.
 // Layout chỉ chịu trách nhiệm trình bày và branding, không chứa nội dung nghiệp vụ của từng sự kiện.
 
-import { escapeEmailHtml } from "../utils/email-html.util";
+import { escapeEmailHtml } from "../../utils/email-html.util";
 
 interface EmailLayoutInput {
   previewText: string;

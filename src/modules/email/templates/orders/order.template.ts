@@ -4,13 +4,13 @@
 import type {
   EmailBrandOptions,
   EmailTemplate,
-} from "../types/email-template.type";
+} from "../../types/email-template.type";
 import {
   escapeEmailHtml,
   formatVietnameseDateTime,
   sanitizeEmailSubject,
-} from "../utils/email-html.util";
-import { renderEmailLayout } from "./email-layout.template";
+} from "../../utils/email-html.util";
+import { renderEmailLayout } from "../common/email-layout.template";
 
 export type OrderEmailRole = "customer" | "seller";
 

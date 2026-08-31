@@ -1,13 +1,16 @@
+// Template này tạo email xác nhận seller đã gửi hồ sơ và đang chờ đội ngũ vận hành kiểm tra.
+// Template chỉ render dữ liệu từ event, không tự truy vấn hoặc thay đổi hồ sơ seller.
+
 import type {
   EmailBrandOptions,
   EmailTemplate,
-} from "../types/email-template.type";
+} from "../../types/email-template.type";
 import {
   escapeEmailHtml,
   formatVietnameseDateTime,
   sanitizeEmailSubject,
-} from "../utils/email-html.util";
-import { renderEmailLayout } from "./email-layout.template";
+} from "../../utils/email-html.util";
+import { renderEmailLayout } from "../common/email-layout.template";
 
 interface SellerApplicationSubmittedTemplateInput extends EmailBrandOptions {
   shopName: string;

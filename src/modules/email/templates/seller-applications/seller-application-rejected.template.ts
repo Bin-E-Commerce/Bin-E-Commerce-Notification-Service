@@ -1,13 +1,16 @@
+// Template này tạo email trả hồ sơ seller, nêu rõ lý do và đường dẫn chỉnh sửa.
+// Template không cập nhật trạng thái hồ sơ; nó chỉ hiển thị snapshot từ event nghiệp vụ.
+
 import type {
   EmailBrandOptions,
   EmailTemplate,
-} from "../types/email-template.type";
+} from "../../types/email-template.type";
 import {
   escapeEmailHtml,
   formatVietnameseDateTime,
   sanitizeEmailSubject,
-} from "../utils/email-html.util";
-import { renderEmailLayout } from "./email-layout.template";
+} from "../../utils/email-html.util";
+import { renderEmailLayout } from "../common/email-layout.template";
 
 interface SellerApplicationRejectedTemplateInput extends EmailBrandOptions {
   shopName: string;

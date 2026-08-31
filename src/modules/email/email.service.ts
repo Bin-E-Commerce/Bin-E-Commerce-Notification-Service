@@ -7,16 +7,17 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import * as nodemailer from "nodemailer";
 import type { SendMailOptions, Transporter } from "nodemailer";
-import { buildOtpTemplate } from "./templates/otp.template";
-import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-application-submitted.template";
-import { buildSellerApplicationRejectedTemplate } from "./templates/seller-application-rejected.template";
-import { buildSellerApplicationApprovedTemplate } from "./templates/seller-application-approved.template";
+import { buildOtpTemplate } from "./templates/auth/otp.template";
+import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-applications/seller-application-submitted.template";
+import { buildSellerApplicationRejectedTemplate } from "./templates/seller-applications/seller-application-rejected.template";
+import { buildSellerApplicationApprovedTemplate } from "./templates/seller-applications/seller-application-approved.template";
 import {
   buildOrderCancelledTemplate,
   buildOrderCreatedTemplate,
   type OrderEmailItem,
   type OrderEmailRole,
-} from "./templates/order.template";
+} from "./templates/orders/order.template";
+import { buildShipmentStatusTemplate, type ShipmentEmailRole } from "./templates/shipments/shipment.template";
 
 @Injectable()
 export class EmailService {
@@ -44,7 +45,7 @@ export class EmailService {
     this.logoPath = resolve(
       this.config.get<string>(
         "EMAIL_LOGO_PATH",
-        resolve(process.cwd(), "assets/email/bin-logo.png"),
+        resolve(process.cwd(), "assets/email/logo_background_white.png"),
       ),
     );
 
@@ -134,6 +135,28 @@ export class EmailService {
     await this.sendTemplateEmail(input.to, template, "order cancelled", attachments);
   }
 
+  // Gửi email cho từng mốc shipment bằng snapshot event, không truy vấn lại Order Service trong email path.
+  async sendShipmentStatusEmail(input: {
+    to: string;
+    orderNumber: string;
+    trackingCode: string;
+    status: string;
+    locationLabel: string;
+    occurredAt: string;
+    orderUrl: string;
+    role: ShipmentEmailRole;
+  }): Promise<void> {
+    const attachments = this.buildBrandAttachments();
+    const template = buildShipmentStatusTemplate({
+      ...input,
+      orderNumber: input.orderNumber,
+      statusLabel: input.status,
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+    await this.sendTemplateEmail(input.to, template, "shipment status", attachments);
+  }
+
   // Gửi email xác nhận hồ sơ người bán đã được gửi và đang chờ đội ngũ vận hành duyệt.
   async sendSellerApplicationSubmittedEmail(
     to: string,
@@ -150,22 +173,7 @@ export class EmailService {
       logoCid: attachments.length > 0 ? this.logoCid : undefined,
     });
 
-    try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to,
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-        attachments,
-      });
-      this.logger.log(`Seller application email sent to ${to}`);
-    } catch (err) {
-      this.logger.error(
-        `Failed to send seller application email to ${to}: ${String(err)}`,
-      );
-      throw err;
-    }
+    await this.sendTemplateEmail(to, template, "seller application", attachments);
   }
 
   // Gửi lý do hồ sơ chưa đạt và đường dẫn quay lại onboarding để seller có thể sửa dữ liệu rồi gửi duyệt lần nữa.
@@ -191,23 +199,7 @@ export class EmailService {
       logoCid: attachments.length > 0 ? this.logoCid : undefined,
     });
 
-    // Gửi email với nội dung đã được xây dựng từ template.
-    try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to,
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-        attachments,
-      });
-      this.logger.log(`Seller rejection email sent to ${to}`);
-    } catch (err) {
-      this.logger.error(
-        `Failed to send seller rejection email to ${to}: ${String(err)}`,
-      );
-      throw err;
-    }
+    await this.sendTemplateEmail(to, template, "seller rejection", attachments);
   }
 
   // Gửi xác nhận hồ sơ đã được duyệt và dẫn người dùng vào Seller Center bằng email có nhận diện thương hiệu.
@@ -226,22 +218,7 @@ export class EmailService {
       logoCid: attachments.length > 0 ? this.logoCid : undefined,
     });
 
-    try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to,
-        subject: template.subject,
-        html: template.html,
-        text: template.text,
-        attachments,
-      });
-      this.logger.log(`Seller approval email sent to ${to}`);
-    } catch (err) {
-      this.logger.error(
-        `Failed to send seller approval email to ${to}: ${String(err)}`,
-      );
-      throw err;
-    }
+    await this.sendTemplateEmail(to, template, "seller approval", attachments);
   }
 
   // Gắn logo bằng CID để email client hiển thị ảnh nội tuyến mà không cần truy cập web hoặc CDN bên ngoài.
