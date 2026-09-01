@@ -3,8 +3,8 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "../../",
-    "baseUrl": ".",
     "strictPropertyInitialization": false,
+    "types": ["node", "jest"],
     "paths": {
       "@common/*": ["../../packages/common/*"]
     }

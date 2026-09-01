@@ -5,6 +5,7 @@ import { SellerApplicationNotificationPolicy } from "./policies/seller-applicati
 import { ShopProfileChangeRequestNotificationPolicy } from "./policies/shop-profile-change-request-notification.policy";
 import { OrderNotificationPolicy } from "./policies/order-notification.policy";
 import { ShipmentNotificationPolicy } from "./policies/shipment-notification.policy";
+import { ReviewNotificationPolicy } from "./policies/review-notification.policy";
 import {
   Notification,
   NotificationSchema,
@@ -35,6 +36,7 @@ import { NotificationsService } from "./services/notifications.service";
     ShopProfileChangeRequestNotificationPolicy,
     OrderNotificationPolicy,
     ShipmentNotificationPolicy,
+    ReviewNotificationPolicy,
   ],
   exports: [
     NotificationsService,
@@ -42,6 +44,7 @@ import { NotificationsService } from "./services/notifications.service";
     ShopProfileChangeRequestNotificationPolicy,
     OrderNotificationPolicy,
     ShipmentNotificationPolicy,
+    ReviewNotificationPolicy,
   ],
 })
 export class NotificationsModule {}

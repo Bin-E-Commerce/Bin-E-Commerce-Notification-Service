@@ -13,6 +13,7 @@ import { SellerApplicationConsumer } from "./kafka/consumers/seller-application.
 import { ShopProfileChangeRequestConsumer } from "./kafka/consumers/shop-profile-change-request.consumer";
 import { OrderConsumer } from "./kafka/consumers/order.consumer";
 import { ShipmentConsumer } from "./kafka/consumers/shipment.consumer";
+import { ReviewConsumer } from "./kafka/consumers/review.consumer";
 import { RedisModule } from "./infrastructure/redis/redis.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { AuthUserEmailClient } from "./integrations/auth-user-email.client";
@@ -45,6 +46,7 @@ import { AuthUserEmailClient } from "./integrations/auth-user-email.client";
     ShopProfileChangeRequestConsumer,
     OrderConsumer,
     ShipmentConsumer,
+    ReviewConsumer,
   ],
   providers: [AuthUserEmailClient],
 })
