@@ -12,7 +12,7 @@ import {
   NotificationCategory,
   NotificationPriority,
 } from "@common/notifications";
-import { CreateNotificationInput } from "../types/create-notification-input.type";
+import { CreateNotificationInput } from "../../types/create-notification-input.type";
 
 const NOTIFICATION_RETENTION_DAYS = 90;
 

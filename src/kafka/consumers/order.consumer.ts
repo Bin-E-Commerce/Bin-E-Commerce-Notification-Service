@@ -10,7 +10,7 @@ import {
 } from "@common/kafka/events";
 import { AuthUserEmailClient } from "../../integrations/auth-user-email.client";
 import { EmailService } from "../../modules/email/email.service";
-import { OrderNotificationPolicy } from "../../modules/notifications/policies/order-notification.policy";
+import { OrderNotificationPolicy } from "../../modules/notifications/policies/order/order-notification.policy";
 import { NotificationsService } from "../../modules/notifications/services/notifications.service";
 import type { CreateNotificationInput } from "../../modules/notifications/types/create-notification-input.type";
 

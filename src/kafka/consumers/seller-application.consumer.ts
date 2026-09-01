@@ -6,7 +6,7 @@ import {
   SellerApplicationSubmittedEvent,
 } from "@common/kafka/events";
 import { EmailService } from "../../modules/email/email.service";
-import { SellerApplicationNotificationPolicy } from "../../modules/notifications/policies/seller-application-notification.policy";
+import { SellerApplicationNotificationPolicy } from "../../modules/notifications/policies/seller/seller-application-notification.policy";
 import { NotificationsService } from "../../modules/notifications/services/notifications.service";
 
 // Consumer nhận event hồ sơ seller đã gửi duyệt để gửi email xác nhận cho người dùng.

@@ -2,7 +2,7 @@
 import { Controller, Logger } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
 import { ReviewCreatedEvent, ReviewEvents, ReviewUpdatedEvent } from "@common/kafka/events";
-import { ReviewNotificationPolicy } from "../../modules/notifications/policies/review-notification.policy";
+import { ReviewNotificationPolicy } from "../../modules/notifications/policies/review/review-notification.policy";
 import { NotificationsService } from "../../modules/notifications/services/notifications.service";
 
 @Controller()

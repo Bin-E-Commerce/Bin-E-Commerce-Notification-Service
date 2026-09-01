@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { NotificationsController } from "./controllers/notifications.controller";
-import { SellerApplicationNotificationPolicy } from "./policies/seller-application-notification.policy";
-import { ShopProfileChangeRequestNotificationPolicy } from "./policies/shop-profile-change-request-notification.policy";
-import { OrderNotificationPolicy } from "./policies/order-notification.policy";
-import { ShipmentNotificationPolicy } from "./policies/shipment-notification.policy";
-import { ReviewNotificationPolicy } from "./policies/review-notification.policy";
+import { SellerApplicationNotificationPolicy } from "./policies/seller/seller-application-notification.policy";
+import { ShopProfileChangeRequestNotificationPolicy } from "./policies/shop/shop-profile-change-request-notification.policy";
+import { OrderNotificationPolicy } from "./policies/order/order-notification.policy";
+import { ShipmentNotificationPolicy } from "./policies/shipment/shipment-notification.policy";
+import { ReviewNotificationPolicy } from "./policies/review/review-notification.policy";
 import {
   Notification,
   NotificationSchema,

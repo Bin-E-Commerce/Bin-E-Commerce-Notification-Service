@@ -8,7 +8,7 @@ import { EventPattern, Payload } from '@nestjs/microservices';
 import { ShipmentStatusUpdatedEvent, ShippingEvents } from '@common/kafka/events';
 import { AuthUserEmailClient } from '../../integrations/auth-user-email.client';
 import { EmailService } from '../../modules/email/email.service';
-import { ShipmentNotificationPolicy } from '../../modules/notifications/policies/shipment-notification.policy';
+import { ShipmentNotificationPolicy } from '../../modules/notifications/policies/shipment/shipment-notification.policy';
 import { NotificationsService } from '../../modules/notifications/services/notifications.service';
 
 @Controller()
