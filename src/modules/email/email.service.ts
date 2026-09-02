@@ -18,6 +18,10 @@ import {
   type OrderEmailRole,
 } from "./templates/orders/order.template";
 import { buildShipmentStatusTemplate, type ShipmentEmailRole } from "./templates/shipments/shipment.template";
+import {
+  buildReturnStatusTemplate,
+  type ReturnEmailRole,
+} from "./templates/returns/return.template";
 
 @Injectable()
 export class EmailService {
@@ -155,6 +159,29 @@ export class EmailService {
       logoCid: attachments.length > 0 ? this.logoCid : undefined,
     });
     await this.sendTemplateEmail(input.to, template, "shipment status", attachments);
+  }
+
+  // Gửi email cập nhật hoàn hàng/hoàn tiền từ snapshot event, không truy vấn lại Order Service trong email path.
+  async sendReturnStatusEmail(input: {
+    to: string;
+    orderNumber: string;
+    status: string;
+    reason: string;
+    refundAmount: string;
+    note: string | null;
+    occurredAt: string;
+    orderUrl: string;
+    eventName: string;
+    role: ReturnEmailRole;
+  }): Promise<void> {
+    const attachments = this.buildBrandAttachments();
+    const template = buildReturnStatusTemplate({
+      ...input,
+      orderUrl: this.toWebUrl(input.orderUrl),
+      webBaseUrl: this.webBaseUrl,
+      logoCid: attachments.length > 0 ? this.logoCid : undefined,
+    });
+    await this.sendTemplateEmail(input.to, template, "return status", attachments);
   }
 
   // Gửi email xác nhận hồ sơ người bán đã được gửi và đang chờ đội ngũ vận hành duyệt.

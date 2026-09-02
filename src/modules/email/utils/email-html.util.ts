@@ -25,3 +25,13 @@ export function formatVietnameseDateTime(value: string): string {
     timeZone: "Asia/Ho_Chi_Minh",
   }).format(date);
 }
+
+// Định dạng số tiền hoàn theo VND, không hiển thị phần thập phân không có ý nghĩa.
+export function formatVietnameseMoney(value: string): string {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return value;
+
+  return new Intl.NumberFormat("vi-VN", {
+    maximumFractionDigits: 0,
+  }).format(Math.round(amount));
+}
