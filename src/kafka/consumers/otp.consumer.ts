@@ -4,7 +4,7 @@ import {
   NotificationEvents,
   OtpRequestedPayload,
 } from "@common/kafka/events";
-import { EmailService } from "../../modules/email/email.service";
+import { EmailService } from "../../modules/email/application/services/email.service";
 
 // Nhận OTP request từ Kafka và gửi email OTP tương ứng
 @Controller()

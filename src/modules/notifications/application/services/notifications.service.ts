@@ -9,9 +9,9 @@ import { NotificationCategory } from "@common/notifications";
 import {
   ListNotificationsQueryDto,
   NotificationReadStatus,
-} from "../dto/list-notifications-query.dto";
-import { Notification } from "../schemas/notification.schema";
-import { NotificationReceipt } from "../schemas/notification-receipt.schema";
+} from "../../presentation/dto/list-notifications-query.dto";
+import { Notification } from "../../infrastructure/schemas/notification.schema";
+import { NotificationReceipt } from "../../infrastructure/schemas/notification-receipt.schema";
 import { CreateNotificationInput } from "../types/create-notification-input.type";
 import {
   NotificationItemResponse,

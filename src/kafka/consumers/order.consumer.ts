@@ -9,10 +9,10 @@ import {
   OrderEvents,
 } from "@common/kafka/events";
 import { AuthUserEmailClient } from "../../integrations/auth-user-email.client";
-import { EmailService } from "../../modules/email/email.service";
-import { OrderNotificationPolicy } from "../../modules/notifications/policies/order/order-notification.policy";
-import { NotificationsService } from "../../modules/notifications/services/notifications.service";
-import type { CreateNotificationInput } from "../../modules/notifications/types/create-notification-input.type";
+import { EmailService } from "../../modules/email/application/services/email.service";
+import { OrderNotificationPolicy } from "../../modules/notifications/application/policies/order/order-notification.policy";
+import { NotificationsService } from "../../modules/notifications/application/services/notifications.service";
+import type { CreateNotificationInput } from "../../modules/notifications/application/types/create-notification-input.type";
 
 type OrderCreatedEmailInput = Omit<
   Parameters<EmailService["sendOrderCreatedEmail"]>[0],

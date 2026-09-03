@@ -5,8 +5,8 @@ import {
   SellerShopProfileChangeRequestedEvent,
   SellerShopProfileChangeReviewedEvent,
 } from "@common/kafka/events";
-import { ShopProfileChangeRequestNotificationPolicy } from "../../modules/notifications/policies/shop/shop-profile-change-request-notification.policy";
-import { NotificationsService } from "../../modules/notifications/services/notifications.service";
+import { ShopProfileChangeRequestNotificationPolicy } from "../../modules/notifications/application/policies/shop/shop-profile-change-request-notification.policy";
+import { NotificationsService } from "../../modules/notifications/application/services/notifications.service";
 
 @Controller()
 export class ShopProfileChangeRequestConsumer {

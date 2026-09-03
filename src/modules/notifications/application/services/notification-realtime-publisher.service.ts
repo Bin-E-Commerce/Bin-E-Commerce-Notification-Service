@@ -5,8 +5,8 @@ import {
   NotificationRealtimeEvents,
   NotificationRealtimeMessage,
 } from "@common/notifications";
-import { NOTIFICATION_REDIS } from "../../../infrastructure/redis/redis.module";
-import { NotificationDocument } from "../schemas/notification.schema";
+import { NOTIFICATION_REDIS } from "../../../../infrastructure/redis/redis.module";
+import { NotificationDocument } from "../../infrastructure/schemas/notification.schema";
 
 @Injectable()
 export class NotificationRealtimePublisherService {

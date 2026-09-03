@@ -11,8 +11,8 @@ import {
 } from "@nestjs/common";
 import { ListNotificationsQueryDto } from "../dto/list-notifications-query.dto";
 import { MarkAllNotificationsReadDto } from "../dto/mark-all-notifications-read.dto";
-import { NotificationViewerService } from "../services/notification-viewer.service";
-import { NotificationsService } from "../services/notifications.service";
+import { NotificationViewerService } from "../../application/services/notification-viewer.service";
+import { NotificationsService } from "../../application/services/notifications.service";
 
 type TrustedHeaders = Record<string, string | string[] | undefined>;
 

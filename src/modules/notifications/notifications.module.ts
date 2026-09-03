@@ -1,24 +1,24 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { NotificationsController } from "./controllers/notifications.controller";
-import { SellerApplicationNotificationPolicy } from "./policies/seller/seller-application-notification.policy";
-import { ShopProfileChangeRequestNotificationPolicy } from "./policies/shop/shop-profile-change-request-notification.policy";
-import { OrderNotificationPolicy } from "./policies/order/order-notification.policy";
-import { ShipmentNotificationPolicy } from "./policies/shipment/shipment-notification.policy";
-import { ReviewNotificationPolicy } from "./policies/review/review-notification.policy";
-import { ReturnNotificationPolicy } from "./policies/return/return-notification.policy";
+import { NotificationsController } from "./presentation/controllers/notifications.controller";
+import { SellerApplicationNotificationPolicy } from "./application/policies/seller/seller-application-notification.policy";
+import { ShopProfileChangeRequestNotificationPolicy } from "./application/policies/shop/shop-profile-change-request-notification.policy";
+import { OrderNotificationPolicy } from "./application/policies/order/order-notification.policy";
+import { ShipmentNotificationPolicy } from "./application/policies/shipment/shipment-notification.policy";
+import { ReviewNotificationPolicy } from "./application/policies/review/review-notification.policy";
+import { ReturnNotificationPolicy } from "./application/policies/return/return-notification.policy";
 import {
   Notification,
   NotificationSchema,
-} from "./schemas/notification.schema";
+} from "./infrastructure/schemas/notification.schema";
 import {
   NotificationReceipt,
   NotificationReceiptSchema,
-} from "./schemas/notification-receipt.schema";
-import { NotificationAudienceService } from "./services/notification-audience.service";
-import { NotificationRealtimePublisherService } from "./services/notification-realtime-publisher.service";
-import { NotificationViewerService } from "./services/notification-viewer.service";
-import { NotificationsService } from "./services/notifications.service";
+} from "./infrastructure/schemas/notification-receipt.schema";
+import { NotificationAudienceService } from "./application/services/notification-audience.service";
+import { NotificationRealtimePublisherService } from "./application/services/notification-realtime-publisher.service";
+import { NotificationViewerService } from "./application/services/notification-viewer.service";
+import { NotificationsService } from "./application/services/notifications.service";
 
 @Module({
   imports: [

@@ -5,9 +5,9 @@ import {
   SellerApplicationReviewedEvent,
   SellerApplicationSubmittedEvent,
 } from "@common/kafka/events";
-import { EmailService } from "../../modules/email/email.service";
-import { SellerApplicationNotificationPolicy } from "../../modules/notifications/policies/seller/seller-application-notification.policy";
-import { NotificationsService } from "../../modules/notifications/services/notifications.service";
+import { EmailService } from "../../modules/email/application/services/email.service";
+import { SellerApplicationNotificationPolicy } from "../../modules/notifications/application/policies/seller/seller-application-notification.policy";
+import { NotificationsService } from "../../modules/notifications/application/services/notifications.service";
 
 // Consumer nhận event hồ sơ seller đã gửi duyệt để gửi email xác nhận cho người dùng.
 @Controller()

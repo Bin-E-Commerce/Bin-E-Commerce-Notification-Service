@@ -5,9 +5,9 @@ import { Controller, Logger } from "@nestjs/common";
 import { EventPattern, Payload } from "@nestjs/microservices";
 import { OrderEvents, ReturnChangedEvent } from "@common/kafka/events";
 import { AuthUserEmailClient } from "../../integrations/auth-user-email.client";
-import { EmailService } from "../../modules/email/email.service";
-import { ReturnNotificationPolicy } from "../../modules/notifications/policies/return/return-notification.policy";
-import { NotificationsService } from "../../modules/notifications/services/notifications.service";
+import { EmailService } from "../../modules/email/application/services/email.service";
+import { ReturnNotificationPolicy } from "../../modules/notifications/application/policies/return/return-notification.policy";
+import { NotificationsService } from "../../modules/notifications/application/services/notifications.service";
 
 @Controller()
 export class ReturnConsumer {

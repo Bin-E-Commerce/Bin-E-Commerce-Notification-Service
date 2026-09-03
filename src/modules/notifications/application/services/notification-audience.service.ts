@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { FilterQuery } from "mongoose";
 import { NotificationAudienceType } from "@common/notifications";
-import { Notification } from "../schemas/notification.schema";
+import { Notification } from "../../infrastructure/schemas/notification.schema";
 import { NotificationViewer } from "../types/notification-viewer.type";
 
 @Injectable()

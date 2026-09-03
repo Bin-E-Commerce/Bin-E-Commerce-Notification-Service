@@ -7,21 +7,21 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import * as nodemailer from "nodemailer";
 import type { SendMailOptions, Transporter } from "nodemailer";
-import { buildOtpTemplate } from "./templates/auth/otp.template";
-import { buildSellerApplicationSubmittedTemplate } from "./templates/seller-applications/seller-application-submitted.template";
-import { buildSellerApplicationRejectedTemplate } from "./templates/seller-applications/seller-application-rejected.template";
-import { buildSellerApplicationApprovedTemplate } from "./templates/seller-applications/seller-application-approved.template";
+import { buildOtpTemplate } from "../templates/auth/otp.template";
+import { buildSellerApplicationSubmittedTemplate } from "../templates/seller-applications/seller-application-submitted.template";
+import { buildSellerApplicationRejectedTemplate } from "../templates/seller-applications/seller-application-rejected.template";
+import { buildSellerApplicationApprovedTemplate } from "../templates/seller-applications/seller-application-approved.template";
 import {
   buildOrderCancelledTemplate,
   buildOrderCreatedTemplate,
   type OrderEmailItem,
   type OrderEmailRole,
-} from "./templates/orders/order.template";
-import { buildShipmentStatusTemplate, type ShipmentEmailRole } from "./templates/shipments/shipment.template";
+} from "../templates/orders/order.template";
+import { buildShipmentStatusTemplate, type ShipmentEmailRole } from "../templates/shipments/shipment.template";
 import {
   buildReturnStatusTemplate,
   type ReturnEmailRole,
-} from "./templates/returns/return.template";
+} from "../templates/returns/return.template";
 
 @Injectable()
 export class EmailService {
