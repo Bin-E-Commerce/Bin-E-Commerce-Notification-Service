@@ -91,7 +91,7 @@ The result is a durable notification feed without making the source business ope
 | Email transport | SMTP through Nodemailer |
 | Internal dependency | Auth Service email lookup |
 | Consumer group | notification-service by default |
-| Health endpoint | GET /api/health |
+| Health endpoint | GET /api/v1/health |
 | Local API documentation | GET /docs |
 | Source of truth | MongoDB notification documents |
 
@@ -305,7 +305,7 @@ The service starts:
 ### Check health
 
 ~~~bash
-curl http://localhost:3005/api/health
+curl http://localhost:3005/api/v1/health
 ~~~
 
 A healthy local response includes:
@@ -825,7 +825,7 @@ pnpm test
 2. Copy .env.example to .env and set local endpoints.
 3. Start Auth Service if testing recipient email lookup.
 4. Start Notification Service in watch mode.
-5. Verify GET /api/health.
+5. Verify GET /api/v1/health.
 6. Produce a supported Kafka event.
 7. Confirm the notification document in MongoDB.
 8. Call the feed endpoint with the matching trusted viewer headers.

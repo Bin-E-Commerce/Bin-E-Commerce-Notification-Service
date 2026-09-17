@@ -1,0 +1,30 @@
+# Docker context là root repository; chỉ giữ manifest, config chung, source và email assets.
+*
+!package.json
+!package-lock.json
+!tsconfig.base.json
+!packages/
+!packages/common/
+!packages/common/**
+!services/
+!services/notification-service/
+!services/notification-service/package.json
+!services/notification-service/tsconfig.json
+!services/notification-service/src/
+!services/notification-service/src/**
+!services/notification-service/assets/
+!services/notification-service/assets/**
+
+# Không đưa dependency/output/secret local vào build context.
+**/node_modules
+**/dist
+**/coverage
+**/.env
+**/.env.*
+!services/notification-service/.env.example
+
+# Metadata và file tạm không phục vụ build.
+**/.git
+**/.gitignore
+**/.vscode
+**/*.log

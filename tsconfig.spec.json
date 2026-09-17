@@ -1,9 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
-    "types": ["node", "jest"]
+    "types": ["node", "jest"],
+    "noEmit": true
   },
-  "include": ["src/**/*.spec.ts"],
-  "exclude": ["node_modules", "dist", "src/**/*.e2e-spec.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }
