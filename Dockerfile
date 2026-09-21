@@ -34,6 +34,11 @@ RUN npm prune --omit=dev
 RUN mkdir -p node_modules/@common \
   && cp -R services/notification-service/dist/packages/common/. node_modules/@common/
 
+# npm có thể đặt dependency production riêng của workspace dưới thư mục nested
+# khi phiên bản dependency không thể hoist lên root; gom chúng vào root để Node
+# resolve được dependency từ dist/services/notification-service lúc runtime.
+RUN cp -R services/notification-service/node_modules/. node_modules/
+
 # -----------------------------------------------------------------------------
 # Giai đoạn runtime: image non-root, chỉ giữ artifact HTTP/consumer và assets email.
 # -----------------------------------------------------------------------------
