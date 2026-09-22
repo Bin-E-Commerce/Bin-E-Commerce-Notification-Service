@@ -1,10 +1,15 @@
+// File này khởi động Notification Service, cấu hình HTTP/Kafka transport và telemetry.
+// File không chứa nghiệp vụ gửi thông báo; consumer và application module giữ trách nhiệm đó.
+
 import { NestFactory } from "@nestjs/core";
 import { ValidationPipe, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Transport } from "@nestjs/microservices";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
+import { setupHttpObservability } from "../../../packages/common/observability/http-observability";
 
+// Khởi động notification boundary và đồng thời chuẩn bị HTTP/Kafka transport.
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
     logger: ["error", "warn", "log"],
@@ -29,15 +34,14 @@ async function bootstrap(): Promise<void> {
       },
       consumer: {
         // Group ID cấu hình theo deployment để production instances chia tải, còn smoke test có thể dùng group riêng không ảnh hưởng offset thật.
-        groupId: config.get<string>(
-          "KAFKA_GROUP_ID",
-          "notification-service",
-        ),
+        groupId: config.get<string>("KAFKA_GROUP_ID", "notification-service"),
       },
     },
   });
 
   app.setGlobalPrefix("api");
+  // Đăng ký metrics RED và request ID trước khi service bắt đầu nhận traffic.
+  setupHttpObservability(app, "notification-service");
   app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
 
   app.useGlobalPipes(
