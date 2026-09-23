@@ -15,7 +15,9 @@ COPY services/notification-service/package.json services/notification-service/ts
 COPY packages/common ./packages/common
 
 # Dùng lockfile root và chỉ cài workspace Notification cùng dev dependency cần build.
-RUN npm ci --workspace=services/notification-service --include=dev --ignore-scripts
+ENV NODE_ENV=development
+RUN npm ci --workspace=services/notification-service --include=dev --bin-links=true --ignore-scripts \
+  && test -x node_modules/.bin/tsc
 
 # Consumer và HTTP controller đều nằm trong src; assets email được giữ riêng để
 # runtime có thể nhúng logo vào template mà không cần đọc source TypeScript.
