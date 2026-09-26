@@ -2,33 +2,33 @@
 // Template chỉ chịu trách nhiệm render nội dung; việc chọn recipient và gửi SMTP thuộc EmailService.
 
 import type {
-  EmailBrandOptions,
-  EmailTemplate,
-} from "../../types/email-template.type";
+    EmailBrandOptions,
+    EmailTemplate,
+} from '@/modules/email/application/types/email-template.type';
 import {
-  escapeEmailHtml,
-  formatVietnameseDateTime,
-  sanitizeEmailSubject,
-} from "../../utils/email-html.util";
-import { renderEmailLayout } from "../common/email-layout.template";
+    escapeEmailHtml,
+    formatVietnameseDateTime,
+    sanitizeEmailSubject,
+} from '@/modules/email/application/utils/email-html.util';
+import { renderEmailLayout } from '@/modules/email/application/templates/common/email-layout.template';
 
 interface SellerApplicationApprovedTemplateInput extends EmailBrandOptions {
-  shopName: string;
-  applicationId: string;
-  reviewedAt: string;
+    shopName: string;
+    applicationId: string;
+    reviewedAt: string;
 }
 
 // Dựng email xác nhận hồ sơ đã đạt với thông tin tra cứu ngắn gọn và CTA trực tiếp vào Seller Center.
 export function buildSellerApplicationApprovedTemplate(
-  input: SellerApplicationApprovedTemplateInput,
+    input: SellerApplicationApprovedTemplateInput,
 ): EmailTemplate {
-  const safeShopName = escapeEmailHtml(input.shopName);
-  const safeApplicationId = escapeEmailHtml(input.applicationId);
-  const reviewedAt = formatVietnameseDateTime(input.reviewedAt);
-  const sellerCenterUrl = `${input.webBaseUrl.replace(/\/$/, "")}/seller`;
-  const safeSellerCenterUrl = escapeEmailHtml(sellerCenterUrl);
+    const safeShopName = escapeEmailHtml(input.shopName);
+    const safeApplicationId = escapeEmailHtml(input.applicationId);
+    const reviewedAt = formatVietnameseDateTime(input.reviewedAt);
+    const sellerCenterUrl = `${input.webBaseUrl.replace(/\/$/, '')}/seller`;
+    const safeSellerCenterUrl = escapeEmailHtml(sellerCenterUrl);
 
-  const content = `
+    const content = `
     <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#52525b;">Hồ sơ người bán</p>
     <h1 style="margin:0;font-family:Arial,sans-serif;font-size:28px;line-height:36px;font-weight:800;color:#18181b;">Shop của bạn đã được duyệt</h1>
     <p style="margin:16px 0 0;font-family:Arial,sans-serif;font-size:15px;line-height:25px;color:#52525b;">
@@ -64,25 +64,25 @@ export function buildSellerApplicationApprovedTemplate(
       Nếu Seller Center chưa mở ngay trong tab hiện tại, hãy làm mới phiên hoặc đăng nhập lại một lần để nhận role mới trong token.
     </p>`;
 
-  return {
-    subject: sanitizeEmailSubject(
-      `[Bin] Hồ sơ người bán ${input.shopName} đã được duyệt`,
-    ),
-    html: renderEmailLayout({
-      previewText: `Shop ${input.shopName} đã được chấp thuận trên Bin E-Commerce.`,
-      logoCid: input.logoCid,
-      content,
-    }),
-    text: [
-      "BIN E-COMMERCE",
-      "",
-      "HỒ SƠ NGƯỜI BÁN ĐÃ ĐƯỢC DUYỆT",
-      `Shop: ${input.shopName}`,
-      `Mã hồ sơ: ${input.applicationId}`,
-      `Thời gian duyệt: ${reviewedAt}`,
-      "",
-      "Tài khoản của bạn đã được cấp quyền truy cập Seller Center.",
-      `Mở Seller Center: ${sellerCenterUrl}`,
-    ].join("\n"),
-  };
+    return {
+        subject: sanitizeEmailSubject(
+            `[Bin] Hồ sơ người bán ${input.shopName} đã được duyệt`,
+        ),
+        html: renderEmailLayout({
+            previewText: `Shop ${input.shopName} đã được chấp thuận trên Bin E-Commerce.`,
+            logoCid: input.logoCid,
+            content,
+        }),
+        text: [
+            'BIN E-COMMERCE',
+            '',
+            'HỒ SƠ NGƯỜI BÁN ĐÃ ĐƯỢC DUYỆT',
+            `Shop: ${input.shopName}`,
+            `Mã hồ sơ: ${input.applicationId}`,
+            `Thời gian duyệt: ${reviewedAt}`,
+            '',
+            'Tài khoản của bạn đã được cấp quyền truy cập Seller Center.',
+            `Mở Seller Center: ${sellerCenterUrl}`,
+        ].join('\n'),
+    };
 }

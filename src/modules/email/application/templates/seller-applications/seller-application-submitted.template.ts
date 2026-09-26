@@ -2,33 +2,33 @@
 // Template chỉ render dữ liệu từ event, không tự truy vấn hoặc thay đổi hồ sơ seller.
 
 import type {
-  EmailBrandOptions,
-  EmailTemplate,
-} from "../../types/email-template.type";
+    EmailBrandOptions,
+    EmailTemplate,
+} from '@/modules/email/application/types/email-template.type';
 import {
-  escapeEmailHtml,
-  formatVietnameseDateTime,
-  sanitizeEmailSubject,
-} from "../../utils/email-html.util";
-import { renderEmailLayout } from "../common/email-layout.template";
+    escapeEmailHtml,
+    formatVietnameseDateTime,
+    sanitizeEmailSubject,
+} from '@/modules/email/application/utils/email-html.util';
+import { renderEmailLayout } from '@/modules/email/application/templates/common/email-layout.template';
 
 interface SellerApplicationSubmittedTemplateInput extends EmailBrandOptions {
-  shopName: string;
-  applicationId: string;
-  submittedAt: string;
+    shopName: string;
+    applicationId: string;
+    submittedAt: string;
 }
 
 // Dựng email xác nhận seller đã gửi hồ sơ, kèm mã tra cứu và đường dẫn quay lại trang trạng thái hồ sơ.
 export function buildSellerApplicationSubmittedTemplate(
-  input: SellerApplicationSubmittedTemplateInput,
+    input: SellerApplicationSubmittedTemplateInput,
 ): EmailTemplate {
-  const safeShopName = escapeEmailHtml(input.shopName);
-  const safeApplicationId = escapeEmailHtml(input.applicationId);
-  const submittedAt = formatVietnameseDateTime(input.submittedAt);
-  const applicationUrl = `${input.webBaseUrl.replace(/\/$/, "")}/seller/register`;
-  const safeApplicationUrl = escapeEmailHtml(applicationUrl);
+    const safeShopName = escapeEmailHtml(input.shopName);
+    const safeApplicationId = escapeEmailHtml(input.applicationId);
+    const submittedAt = formatVietnameseDateTime(input.submittedAt);
+    const applicationUrl = `${input.webBaseUrl.replace(/\/$/, '')}/seller/register`;
+    const safeApplicationUrl = escapeEmailHtml(applicationUrl);
 
-  const content = `
+    const content = `
     <p style="margin:0 0 12px;font-family:Arial,sans-serif;font-size:12px;line-height:18px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#a16207;">Hồ sơ người bán</p>
     <h1 style="margin:0;font-family:Arial,sans-serif;font-size:28px;line-height:36px;font-weight:800;color:#18181b;">Bin đã nhận hồ sơ của bạn</h1>
     <p style="margin:16px 0 0;font-family:Arial,sans-serif;font-size:15px;line-height:25px;color:#52525b;">
@@ -64,26 +64,26 @@ export function buildSellerApplicationSubmittedTemplate(
       Nếu cần chỉnh sửa khi hồ sơ đang chờ duyệt, hãy mở trang trạng thái và chọn “Chỉnh sửa hồ sơ”. Thay đổi chỉ được lưu khi bạn gửi lại hồ sơ.
     </p>`;
 
-  return {
-    subject: sanitizeEmailSubject(
-      `[Bin] Hồ sơ người bán ${input.shopName} đang chờ duyệt`,
-    ),
-    html: renderEmailLayout({
-      previewText: `Bin đã nhận hồ sơ mở shop ${input.shopName}.`,
-      logoCid: input.logoCid,
-      content,
-    }),
-    text: [
-      "BIN E-COMMERCE",
-      "",
-      "HỒ SƠ NGƯỜI BÁN ĐÃ ĐƯỢC GỬI",
-      `Shop: ${input.shopName}`,
-      `Mã hồ sơ: ${input.applicationId}`,
-      `Thời gian gửi: ${submittedAt}`,
-      "Trạng thái: Đang chờ duyệt",
-      "",
-      "Bin sẽ gửi email tiếp theo khi hồ sơ được duyệt hoặc cần bổ sung thông tin.",
-      `Xem trạng thái hồ sơ: ${applicationUrl}`,
-    ].join("\n"),
-  };
+    return {
+        subject: sanitizeEmailSubject(
+            `[Bin] Hồ sơ người bán ${input.shopName} đang chờ duyệt`,
+        ),
+        html: renderEmailLayout({
+            previewText: `Bin đã nhận hồ sơ mở shop ${input.shopName}.`,
+            logoCid: input.logoCid,
+            content,
+        }),
+        text: [
+            'BIN E-COMMERCE',
+            '',
+            'HỒ SƠ NGƯỜI BÁN ĐÃ ĐƯỢC GỬI',
+            `Shop: ${input.shopName}`,
+            `Mã hồ sơ: ${input.applicationId}`,
+            `Thời gian gửi: ${submittedAt}`,
+            'Trạng thái: Đang chờ duyệt',
+            '',
+            'Bin sẽ gửi email tiếp theo khi hồ sơ được duyệt hoặc cần bổ sung thông tin.',
+            `Xem trạng thái hồ sơ: ${applicationUrl}`,
+        ].join('\n'),
+    };
 }

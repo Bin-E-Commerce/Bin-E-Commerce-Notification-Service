@@ -1,22 +1,22 @@
 // Template này dựng khung HTML dùng chung cho mọi email của Bin E-Commerce.
 // Layout chỉ chịu trách nhiệm trình bày và branding, không chứa nội dung nghiệp vụ của từng sự kiện.
 
-import { escapeEmailHtml } from "../../utils/email-html.util";
+import { escapeEmailHtml } from '@/modules/email/application/utils/email-html.util';
 
 interface EmailLayoutInput {
-  previewText: string;
-  logoCid?: string;
-  content: string;
+    previewText: string;
+    logoCid?: string;
+    content: string;
 }
 
 // Dựng khung email dùng table và style inline để hiển thị ổn định trên Gmail, Outlook và ứng dụng mail di động.
 export function renderEmailLayout(input: EmailLayoutInput): string {
-  const safePreviewText = escapeEmailHtml(input.previewText);
-  const brand = input.logoCid
-    ? `<img src="cid:${escapeEmailHtml(input.logoCid)}" width="138" alt="Bin E-Commerce" style="display:block;width:138px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`
-    : `<span style="font-family:Arial,sans-serif;font-size:21px;line-height:28px;font-weight:800;color:#18181b;">BIN E-COMMERCE</span>`;
+    const safePreviewText = escapeEmailHtml(input.previewText);
+    const brand = input.logoCid
+        ? `<img src="cid:${escapeEmailHtml(input.logoCid)}" width="138" alt="Bin E-Commerce" style="display:block;width:138px;max-width:100%;height:auto;border:0;outline:none;text-decoration:none;" />`
+        : `<span style="font-family:Arial,sans-serif;font-size:21px;line-height:28px;font-weight:800;color:#18181b;">BIN E-COMMERCE</span>`;
 
-  return `<!doctype html>
+    return `<!doctype html>
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
