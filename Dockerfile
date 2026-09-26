@@ -17,7 +17,8 @@ COPY packages/common ./packages/common
 # Dùng lockfile root và chỉ cài workspace Notification cùng dev dependency cần build.
 ENV NODE_ENV=development
 RUN npm ci --workspace=services/notification-service --include=dev --bin-links=true --ignore-scripts \
-  && test -x node_modules/.bin/tsc
+  && test -x node_modules/.bin/tsc \
+  && test -x node_modules/.bin/tsc-alias
 
 # Consumer và HTTP controller đều nằm trong src; assets email được giữ riêng để
 # runtime có thể nhúng logo vào template mà không cần đọc source TypeScript.
@@ -25,7 +26,8 @@ COPY services/notification-service/src ./services/notification-service/src
 COPY services/notification-service/assets ./services/notification-service/assets
 
 # tsconfig.json dùng rootDir monorepo, output nằm dưới dist/services/notification-service/src.
-RUN npx tsc -p services/notification-service/tsconfig.json
+RUN npx tsc -p services/notification-service/tsconfig.json \
+  && npx tsc-alias -p services/notification-service/tsconfig.json
 
 # Loại Nest CLI, TypeScript, Jest và các dev dependency trước runtime stage.
 RUN npm prune --omit=dev
