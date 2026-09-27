@@ -1,3 +1,6 @@
+// Health endpoint công bố trạng thái kết nối nền tảng của Notification Service.
+// Endpoint chỉ báo cấu hình broker và trạng thái Mongo/SMTP; Kafka consumer vẫn do bootstrap quản lý.
+
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectConnection } from '@nestjs/mongoose';
@@ -11,6 +14,7 @@ export class HealthController {
         private readonly connection: Connection,
     ) {}
 
+    // Trả snapshot health để container orchestration và vận hành kiểm tra nhanh các dependency chính.
     @Get()
     check() {
         const mongoStatus = this.mongoStatus();
@@ -31,7 +35,7 @@ export class HealthController {
                 kafka: {
                     status: 'configured',
                     brokers: this.config
-                        .get<string>('KAFKA_BROKERS', 'localhost:9092')
+                        .get<string>('KAFKA_BROKERS', 'localhost:29092')
                         .split(',')
                         .map((broker) => broker.trim())
                         .filter(Boolean),
@@ -56,6 +60,7 @@ export class HealthController {
         };
     }
 
+    // Chuyển readyState của Mongoose thành nhãn ổn định cho health response.
     private mongoStatus(): 'up' | 'down' | 'connecting' | 'disconnecting' {
         switch (this.connection.readyState) {
             case 1:
@@ -69,6 +74,7 @@ export class HealthController {
         }
     }
 
+    // Chỉ trả số liệu bộ nhớ đã làm tròn để health endpoint không lộ dữ liệu runtime dư thừa.
     private memoryUsage() {
         const usage = process.memoryUsage();
         return {

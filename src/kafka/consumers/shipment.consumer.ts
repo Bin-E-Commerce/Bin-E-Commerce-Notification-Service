@@ -10,7 +10,7 @@ import {
     ShippingEvents,
 } from '@common/kafka/events';
 import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
-import { EmailService } from '@/modules/email/application/services/email.service';
+import { EmailDeliveryService } from '@/modules/email/application/services/email-delivery.service';
 import { ShipmentNotificationPolicy } from '@/modules/notifications/application/policies/shipment/shipment-notification.policy';
 import { NotificationsService } from '@/modules/notifications/application/services/notifications.service';
 
@@ -21,7 +21,7 @@ export class ShipmentConsumer {
     constructor(
         private readonly notifications: NotificationsService,
         private readonly policy: ShipmentNotificationPolicy,
-        private readonly emailService: EmailService,
+        private readonly emailDelivery: EmailDeliveryService,
         private readonly userEmailClient: AuthUserEmailClient,
     ) {}
 
@@ -43,19 +43,26 @@ export class ShipmentConsumer {
         );
     }
 
-    // Deduplicate theo eventId trước khi resolve email và render template để retry Kafka không gửi mail trùng.
+    // Notification có thể đã tồn tại từ lần nhận trước; email vẫn luôn được upsert vào outbox riêng.
+    // Nếu auth hoặc Mongo lỗi thì ném lỗi để Kafka redelivery, còn SMTP được worker retry độc lập.
     private async notifyUser(
         event: ShipmentStatusUpdatedEvent,
         input: Parameters<NotificationsService['createFromEvent']>[0],
         userId: string,
         role: 'customer' | 'seller',
     ): Promise<void> {
-        const result = await this.notifications.createFromEvent(input);
-        if (!result.created) return;
-        try {
-            const email = await this.userEmailClient.getEmail(userId);
-            if (!email) return;
-            await this.emailService.sendShipmentStatusEmail({
+        await this.notifications.createFromEvent(input);
+        const email = await this.userEmailClient.getEmail(userId);
+        if (!email) {
+            this.logger.warn(
+                `No email found for shipment notification user ${userId}`,
+            );
+            return;
+        }
+
+        await this.emailDelivery.enqueueShipmentStatus(
+            `${event.eventId}:${role}:${userId}`,
+            {
                 to: email,
                 orderNumber: event.data.orderNumber,
                 trackingCode: event.data.trackingCode,
@@ -64,11 +71,7 @@ export class ShipmentConsumer {
                 occurredAt: event.occurredAt,
                 orderUrl: input.actionUrl ?? '/',
                 role,
-            });
-        } catch (error) {
-            this.logger.error(
-                `Failed to send shipment email to ${userId}: ${String(error)}`,
-            );
-        }
+            },
+        );
     }
 }

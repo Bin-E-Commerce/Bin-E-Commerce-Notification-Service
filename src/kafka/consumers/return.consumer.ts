@@ -5,7 +5,7 @@ import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import { OrderEvents, ReturnChangedEvent } from '@common/kafka/events';
 import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
-import { EmailService } from '@/modules/email/application/services/email.service';
+import { EmailDeliveryService } from '@/modules/email/application/services/email-delivery.service';
 import { ReturnNotificationPolicy } from '@/modules/notifications/application/policies/return/return-notification.policy';
 import { NotificationsService } from '@/modules/notifications/application/services/notifications.service';
 
@@ -16,7 +16,7 @@ export class ReturnConsumer {
     constructor(
         private readonly notifications: NotificationsService,
         private readonly policy: ReturnNotificationPolicy,
-        private readonly emailService: EmailService,
+        private readonly emailDelivery: EmailDeliveryService,
         private readonly userEmailClient: AuthUserEmailClient,
     ) {}
 
@@ -94,41 +94,33 @@ export class ReturnConsumer {
         }
     }
 
-    // Gửi email độc lập với notification; lỗi SMTP chỉ được log để không làm mất notification in-app hoặc retry Kafka vô hạn.
+    // Notification và email delivery có idempotency riêng; lỗi SMTP được worker retry độc lập.
     private async notifyUser(
         event: ReturnChangedEvent,
         input: Parameters<NotificationsService['createFromEvent']>[0],
         userId: string,
         role: 'customer' | 'seller',
     ): Promise<void> {
-        const result = await this.notifications.createFromEvent(input);
-        if (!result.created) return;
-
-        try {
-            const email = await this.userEmailClient.getEmail(userId);
-            if (!email) {
-                this.logger.warn(
-                    `No email found for return notification user ${userId}`,
-                );
-                return;
-            }
-
-            await this.emailService.sendReturnStatusEmail({
-                to: email,
-                orderNumber: event.data.orderNumber,
-                status: event.data.status,
-                reason: event.data.reason,
-                refundAmount: event.data.refundAmount,
-                note: event.data.note,
-                occurredAt: event.occurredAt,
-                orderUrl: input.actionUrl ?? '/',
-                eventName: event.eventName,
-                role,
-            });
-        } catch (error) {
-            this.logger.error(
-                `Failed to send return email to ${userId}: ${String(error)}`,
+        await this.notifications.createFromEvent(input);
+        const email = await this.userEmailClient.getEmail(userId);
+        if (!email) {
+            this.logger.warn(
+                `No email found for return notification user ${userId}`,
             );
+            return;
         }
+
+        await this.emailDelivery.enqueueReturnStatus(`${input.eventId}:email`, {
+            to: email,
+            orderNumber: event.data.orderNumber,
+            status: event.data.status,
+            reason: event.data.reason,
+            refundAmount: event.data.refundAmount,
+            note: event.data.note,
+            occurredAt: event.occurredAt,
+            orderUrl: input.actionUrl ?? '/',
+            eventName: event.eventName,
+            role,
+        });
     }
 }

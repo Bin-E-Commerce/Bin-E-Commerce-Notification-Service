@@ -9,7 +9,8 @@ import {
     OrderEvents,
 } from '@common/kafka/events';
 import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
-import { EmailService } from '@/modules/email/application/services/email.service';
+import { EmailDeliveryService } from '@/modules/email/application/services/email-delivery.service';
+import type { EmailService } from '@/modules/email/application/services/email.service';
 import { OrderNotificationPolicy } from '@/modules/notifications/application/policies/order/order-notification.policy';
 import { NotificationsService } from '@/modules/notifications/application/services/notifications.service';
 import type { CreateNotificationInput } from '@/modules/notifications/application/types/create-notification-input.type';
@@ -30,7 +31,7 @@ export class OrderConsumer {
     constructor(
         private readonly notifications: NotificationsService,
         private readonly policy: OrderNotificationPolicy,
-        private readonly emailService: EmailService,
+        private readonly emailDelivery: EmailDeliveryService,
         private readonly userEmailClient: AuthUserEmailClient,
     ) {}
 
@@ -115,42 +116,36 @@ export class OrderConsumer {
         }
     }
 
-    // Chỉ gửi email khi notification vừa được tạo; notification-service dùng eventId unique để chống Kafka redelivery gửi trùng.
+    // Notification có thể đã tồn tại từ lần nhận trước; email được upsert vào outbox riêng để SMTP có thể retry.
     private async createNotificationAndEmail(
         input: CreateNotificationInput,
         userId: string,
         emailInput: OrderCreatedEmailInput | OrderCancelledEmailInput,
         emailOverride?: string | null,
     ): Promise<void> {
-        const result = await this.notifications.createFromEvent(input);
-        if (!result.created) return;
-
-        try {
-            const email =
-                emailOverride?.trim().toLowerCase() ||
-                (await this.userEmailClient.getEmail(userId));
-            if (!email) {
-                this.logger.warn(
-                    `No email found for order notification user ${userId}`,
-                );
-                return;
-            }
-
-            if (input.type.includes('created')) {
-                await this.emailService.sendOrderCreatedEmail({
-                    ...emailInput,
-                    to: email,
-                } as Parameters<EmailService['sendOrderCreatedEmail']>[0]);
-            } else {
-                await this.emailService.sendOrderCancelledEmail({
-                    ...emailInput,
-                    to: email,
-                } as Parameters<EmailService['sendOrderCancelledEmail']>[0]);
-            }
-        } catch (error) {
-            this.logger.error(
-                `Failed to send order email for ${input.entityId} to ${userId}: ${String(error)}`,
+        await this.notifications.createFromEvent(input);
+        const email =
+            emailOverride?.trim().toLowerCase() ||
+            (await this.userEmailClient.getEmail(userId));
+        if (!email) {
+            this.logger.warn(
+                `No email found for order notification user ${userId}`,
             );
+            return;
         }
+
+        const dedupeKey = `${input.eventId}:email`;
+        if (input.type.includes('created')) {
+            await this.emailDelivery.enqueueOrderCreated(dedupeKey, {
+                ...emailInput,
+                to: email,
+            } as Parameters<EmailService['sendOrderCreatedEmail']>[0]);
+            return;
+        }
+
+        await this.emailDelivery.enqueueOrderCancelled(dedupeKey, {
+            ...emailInput,
+            to: email,
+        } as Parameters<EmailService['sendOrderCancelledEmail']>[0]);
     }
 }
