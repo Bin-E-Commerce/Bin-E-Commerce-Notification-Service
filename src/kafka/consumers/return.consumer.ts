@@ -102,6 +102,9 @@ export class ReturnConsumer {
         role: 'customer' | 'seller',
     ): Promise<void> {
         await this.notifications.createFromEvent(input);
+        // Giữ feed return đầy đủ; email chỉ gửi khi có quyết định hoặc việc cần người nhận biết.
+        if (!this.shouldSendEmail(event.eventName, role)) return;
+
         const email = await this.userEmailClient.getEmail(userId);
         if (!email) {
             this.logger.warn(
@@ -122,5 +125,27 @@ export class ReturnConsumer {
             eventName: event.eventName,
             role,
         });
+    }
+
+    // Seller chỉ cần email khi có yêu cầu mới; customer nhận email xác nhận và kết quả kiểm tra/duyệt.
+    private shouldSendEmail(
+        eventName: ReturnChangedEvent['eventName'],
+        role: 'customer' | 'seller',
+    ): boolean {
+        if (role === 'seller') {
+            return eventName === OrderEvents.RETURN_REQUESTED;
+        }
+
+        switch (eventName) {
+            case OrderEvents.RETURN_REQUESTED:
+            case OrderEvents.RETURN_APPROVED:
+            case OrderEvents.RETURN_REJECTED:
+            case OrderEvents.RETURN_INSPECTION_PASSED:
+            case OrderEvents.RETURN_INSPECTION_FAILED:
+                return true;
+            default:
+                // Hủy yêu cầu và các bước vận chuyển vẫn có trong app, không gửi thêm email trạng thái.
+                return false;
+        }
     }
 }

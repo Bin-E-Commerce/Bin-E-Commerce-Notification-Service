@@ -6,13 +6,21 @@
 import { Controller, Logger } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 import {
-    ShipmentStatusUpdatedEvent,
+    type ShipmentStatus,
+    type ShipmentStatusUpdatedEvent,
     ShippingEvents,
 } from '@common/kafka/events';
 import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
 import { EmailDeliveryService } from '@/modules/email/application/services/email-delivery.service';
 import { ShipmentNotificationPolicy } from '@/modules/notifications/application/policies/shipment/shipment-notification.policy';
 import { NotificationsService } from '@/modules/notifications/application/services/notifications.service';
+
+// Email chỉ dành cho mốc vận chuyển quan trọng; các cập nhật nhỏ vẫn nằm trong app.
+const EMAIL_SHIPMENT_STATUSES = new Set<ShipmentStatus>([
+    'PICKED_UP',
+    'DELIVERED',
+    'FAILED',
+]);
 
 @Controller()
 export class ShipmentConsumer {
@@ -29,29 +37,49 @@ export class ShipmentConsumer {
     @EventPattern(ShippingEvents.STATUS_UPDATED)
     async handle(@Payload() event: ShipmentStatusUpdatedEvent): Promise<void> {
         this.logger.log(`Received shipment event ${event.eventId}`);
+        const sendEmail = this.shouldSendEmail(event);
+
         await this.notifyUser(
             event,
             this.policy.buildForCustomer(event),
             event.data.customerUserId,
             'customer',
+            sendEmail,
         );
         await this.notifyUser(
             event,
             this.policy.buildForSeller(event),
             event.data.sellerUserId,
             'seller',
+            sendEmail,
         );
     }
 
-    // Notification có thể đã tồn tại từ lần nhận trước; email vẫn luôn được upsert vào outbox riêng.
+    // Bỏ email trạng thái trung gian và email vận đơn hoàn để tránh trùng với luồng return riêng.
+    private shouldSendEmail(event: ShipmentStatusUpdatedEvent): boolean {
+        if (
+            event.data.shipmentKind === 'RETURN' ||
+            Boolean(event.data.returnRequestId)
+        ) {
+            return false;
+        }
+
+        return EMAIL_SHIPMENT_STATUSES.has(event.data.status);
+    }
+
+    // Feed luôn nhận đủ trạng thái; các mốc không gửi email sẽ dừng trước khi tra email người dùng.
     // Nếu auth hoặc Mongo lỗi thì ném lỗi để Kafka redelivery, còn SMTP được worker retry độc lập.
     private async notifyUser(
         event: ShipmentStatusUpdatedEvent,
         input: Parameters<NotificationsService['createFromEvent']>[0],
         userId: string,
         role: 'customer' | 'seller',
+        sendEmail: boolean,
     ): Promise<void> {
         await this.notifications.createFromEvent(input);
+        // Ghi feed trước rồi mới lọc email để không làm mất cập nhật chi tiết trong ứng dụng.
+        if (!sendEmail) return;
+
         const email = await this.userEmailClient.getEmail(userId);
         if (!email) {
             this.logger.warn(
