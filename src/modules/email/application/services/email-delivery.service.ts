@@ -25,8 +25,18 @@ type OrderCancelledEmailInput = Parameters<
     EmailService['sendOrderCancelledEmail']
 >[0];
 type ReturnEmailInput = Parameters<EmailService['sendReturnStatusEmail']>[0];
+type WalletFinanceEmailInput = Parameters<
+    EmailService['sendWalletFinanceStatusEmail']
+>[0];
 type EmailDeliveryKind =
-    'SHIPMENT_STATUS' | 'ORDER_CREATED' | 'ORDER_CANCELLED' | 'RETURN_STATUS';
+    | 'SHIPMENT_STATUS'
+    | 'ORDER_CREATED'
+    | 'ORDER_CANCELLED'
+    | 'RETURN_STATUS'
+    | 'WALLET_FINANCE_STATUS';
+
+// Chừa một nhịp để feed realtime hoặc lần polling 30 giây cập nhật website trước email tài chính.
+const WALLET_FINANCE_EMAIL_DELAY_MS = 60_000;
 
 // Gửi email shipment theo at-least-once delivery; dedupeKey ngăn cùng event/recipient tạo nhiều job.
 @Injectable()
@@ -87,6 +97,19 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
         await this.enqueue(dedupeKey, 'RETURN_STATUS', input);
     }
 
+    // Xếp email tài chính sau feed website 60 giây; job vẫn bền vững và được worker retry như các email khác.
+    async enqueueWalletFinanceStatus(
+        dedupeKey: string,
+        input: WalletFinanceEmailInput,
+    ): Promise<void> {
+        await this.enqueue(
+            dedupeKey,
+            'WALLET_FINANCE_STATUS',
+            input,
+            WALLET_FINANCE_EMAIL_DELAY_MS,
+        );
+    }
+
     // Upsert payload snapshot dùng chung cho mọi loại email nghiệp vụ có thể retry.
     private async enqueue(
         dedupeKey: string,
@@ -95,8 +118,11 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
             | ShipmentEmailInput
             | OrderCreatedEmailInput
             | OrderCancelledEmailInput
-            | ReturnEmailInput,
+            | ReturnEmailInput
+            | WalletFinanceEmailInput,
+        delayMs = 0,
     ): Promise<void> {
+        // Delay chỉ đặt lúc tạo job mới; Kafka replay giữ nguyên lịch đã lưu nhờ $setOnInsert và khóa dedupe.
         await this.model.updateOne(
             { dedupeKey },
             {
@@ -107,7 +133,7 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
                     payload: { ...input, to: undefined },
                     status: 'PENDING',
                     attemptCount: 0,
-                    availableAt: new Date(),
+                    availableAt: new Date(Date.now() + delayMs),
                     sentAt: null,
                     lastError: null,
                 },
@@ -137,9 +163,13 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
                 );
             } catch (error) {
                 const attemptCount = job.attemptCount + 1;
-                const delaySeconds = Math.min(
+                const baseDelaySeconds = Math.min(
                     3600,
-                    2 ** Math.min(attemptCount, 10),
+                    2 ** Math.min(attemptCount, 12),
+                );
+                // Jitter 20% giảm việc nhiều job lỗi SMTP cùng thức dậy và dồn tải vào một thời điểm.
+                const delaySeconds = Math.round(
+                    baseDelaySeconds * (0.8 + Math.random() * 0.2),
                 );
                 await this.model.updateOne(
                     { _id: job._id, status: 'PROCESSING' },
@@ -157,6 +187,9 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
                         },
                     },
                 );
+                this.logger.warn(
+                    `Email delivery ${job._id.toString()} deferred after attempt ${attemptCount}: ${error instanceof Error ? error.message : String(error)}`,
+                );
             }
         }
     }
@@ -164,7 +197,8 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
     // Thu hồi job PROCESSING bị bỏ dở sau crash rồi claim atomically bằng một update Mongo.
     private async claimNext(): Promise<EmailDeliveryDocument | null> {
         const now = new Date();
-        const staleBefore = new Date(Date.now() - 60_000);
+        // Lease 5 phút dài hơn timeout gửi SMTP; job chỉ được instance khác thu hồi sau khi worker cũ có thể đã chết.
+        const staleBefore = new Date(Date.now() - 5 * 60_000);
         return this.model
             .findOneAndUpdate(
                 {
@@ -207,6 +241,12 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
             case 'RETURN_STATUS':
                 await this.emailService.sendReturnStatusEmail({
                     ...(payload as Omit<ReturnEmailInput, 'to'>),
+                    to: job.to,
+                });
+                return;
+            case 'WALLET_FINANCE_STATUS':
+                await this.emailService.sendWalletFinanceStatusEmail({
+                    ...(payload as Omit<WalletFinanceEmailInput, 'to'>),
                     to: job.to,
                 });
                 return;

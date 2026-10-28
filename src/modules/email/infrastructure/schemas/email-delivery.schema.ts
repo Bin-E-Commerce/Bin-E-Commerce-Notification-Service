@@ -16,13 +16,15 @@ export class EmailDelivery {
             'ORDER_CREATED',
             'ORDER_CANCELLED',
             'RETURN_STATUS',
+            'WALLET_FINANCE_STATUS',
         ],
     })
     kind:
         | 'SHIPMENT_STATUS'
         | 'ORDER_CREATED'
         | 'ORDER_CANCELLED'
-        | 'RETURN_STATUS';
+        | 'RETURN_STATUS'
+        | 'WALLET_FINANCE_STATUS';
 
     @Prop({ required: true })
     to: string;

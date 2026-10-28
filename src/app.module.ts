@@ -16,6 +16,7 @@ import { OrderConsumer } from '@/kafka/consumers/order.consumer';
 import { ShipmentConsumer } from '@/kafka/consumers/shipment.consumer';
 import { ReviewConsumer } from '@/kafka/consumers/review.consumer';
 import { ReturnConsumer } from '@/kafka/consumers/return.consumer';
+import { WalletFinanceConsumer } from '@/kafka/consumers/finance/wallet-finance.consumer';
 import { RedisModule } from '@/infrastructure/redis/redis.module';
 import { NotificationsModule } from '@/modules/notifications/notifications.module';
 import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
@@ -51,6 +52,7 @@ import { AuthUserEmailClient } from '@/integrations/auth-user-email.client';
         ShipmentConsumer,
         ReviewConsumer,
         ReturnConsumer,
+        WalletFinanceConsumer,
     ],
     providers: [AuthUserEmailClient],
 })

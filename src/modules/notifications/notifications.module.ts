@@ -7,6 +7,7 @@ import { OrderNotificationPolicy } from '@/modules/notifications/application/pol
 import { ShipmentNotificationPolicy } from '@/modules/notifications/application/policies/shipment/shipment-notification.policy';
 import { ReviewNotificationPolicy } from '@/modules/notifications/application/policies/review/review-notification.policy';
 import { ReturnNotificationPolicy } from '@/modules/notifications/application/policies/return/return-notification.policy';
+import { WalletFinanceNotificationPolicy } from '@/modules/notifications/application/policies/finance/wallet-finance-notification.policy';
 import {
     Notification,
     NotificationSchema,
@@ -42,6 +43,7 @@ import { NotificationsService } from '@/modules/notifications/application/servic
         ShipmentNotificationPolicy,
         ReviewNotificationPolicy,
         ReturnNotificationPolicy,
+        WalletFinanceNotificationPolicy,
     ],
     exports: [
         NotificationsService,
@@ -51,6 +53,7 @@ import { NotificationsService } from '@/modules/notifications/application/servic
         ShipmentNotificationPolicy,
         ReviewNotificationPolicy,
         ReturnNotificationPolicy,
+        WalletFinanceNotificationPolicy,
     ],
 })
 export class NotificationsModule {}

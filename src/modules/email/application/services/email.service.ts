@@ -29,6 +29,8 @@ import {
     buildReturnStatusTemplate,
     type ReturnEmailRole,
 } from '@/modules/email/application/templates/returns/return.template';
+import { buildWalletFinanceTemplate } from '@/modules/email/application/templates/payments/wallet-finance.template';
+import type { WalletFinanceEventName } from '@common/kafka/events';
 
 @Injectable()
 export class EmailService {
@@ -39,7 +41,7 @@ export class EmailService {
     private readonly logoPath: string;
     private readonly logoCid = 'bin-ecommerce-logo';
 
-    // Khởi tạo SMTP transport và cấu hình nhận diện email một lần khi notification-service khởi động.
+    // Khởi tạo SMTP transport một lần; timeout hữu hạn giúp worker ghi nhận lỗi mạng và retry thay vì treo job.
     constructor(private readonly config: ConfigService) {
         const host = this.config.get<string>('SMTP_HOST', 'smtp.gmail.com');
         const port = this.config.get<number>('SMTP_PORT', 587);
@@ -65,6 +67,10 @@ export class EmailService {
             port,
             secure: port === 465,
             auth: { user, pass },
+            // Giới hạn từng chặng kết nối để lỗi DNS, greeting hoặc socket được đưa về hàng đợi retry đúng hạn.
+            connectionTimeout: 30_000,
+            greetingTimeout: 30_000,
+            socketTimeout: 60_000,
         });
     }
 
@@ -284,6 +290,30 @@ export class EmailService {
             input.to,
             template,
             'return status',
+            attachments,
+        );
+    }
+
+    // Gửi email seller theo trạng thái ví từ event snapshot, không tra lại dữ liệu tài chính nhạy cảm.
+    async sendWalletFinanceStatusEmail(input: {
+        to: string;
+        eventName: WalletFinanceEventName;
+        transactionId: string;
+        amount: string;
+        note: string | null;
+        occurredAt: string;
+        actionUrl: string;
+    }): Promise<void> {
+        const attachments = this.buildBrandAttachments();
+        const template = buildWalletFinanceTemplate({
+            ...input,
+            webBaseUrl: this.webBaseUrl,
+            logoCid: attachments.length > 0 ? this.logoCid : undefined,
+        });
+        await this.sendTemplateEmail(
+            input.to,
+            template,
+            'wallet finance status',
             attachments,
         );
     }
