@@ -104,6 +104,16 @@ export class ReturnNotificationPolicy {
                     title: 'Hàng hoàn đang được vận chuyển',
                     message: `Kiện hàng hoàn của đơn ${orderNumber} đang được vận chuyển về shop.`,
                 };
+            case OrderEvents.RETURN_SHIPMENT_FAILED:
+                return {
+                    title: 'Vận chuyển hàng hoàn gặp lỗi',
+                    message: `Vận đơn hoàn của đơn ${orderNumber} gặp lỗi${event.data.note ? `: ${event.data.note}` : '.'} Shop có thể tạo lại vận đơn sau khi xử lý.`,
+                };
+            case OrderEvents.RETURN_SHIPMENT_RETRY_STARTED:
+                return {
+                    title: 'Đã tạo lại vận đơn hoàn',
+                    message: `Shop đã tạo lại vận đơn hoàn cho đơn ${orderNumber}.`,
+                };
             case OrderEvents.RETURN_RECEIVED:
                 return {
                     title: 'Shop đã nhận hàng hoàn',
@@ -133,6 +143,7 @@ export class ReturnNotificationPolicy {
             APPROVED: 'đã được duyệt',
             AWAITING_SHIPMENT: 'đang chờ gửi hàng',
             IN_TRANSIT: 'đang hoàn về shop',
+            SHIPMENT_FAILED: 'vận chuyển hoàn hàng gặp lỗi',
             RECEIVED: 'đã nhận hàng hoàn',
             REFUND_PENDING: 'đã kiểm tra đạt, đang chờ hoàn tiền',
             INSPECTION_PASSED: 'đã kiểm tra đạt, đang chờ hoàn tiền',

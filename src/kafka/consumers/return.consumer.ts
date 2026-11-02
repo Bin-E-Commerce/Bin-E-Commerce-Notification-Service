@@ -50,6 +50,22 @@ export class ReturnConsumer {
         await this.handleEvent(event);
     }
 
+    // Báo cho customer và seller biết vận đơn hoàn lỗi để seller có thể tạo lại sau khi khắc phục.
+    @EventPattern(OrderEvents.RETURN_SHIPMENT_FAILED)
+    async handleShipmentFailed(
+        @Payload() event: ReturnChangedEvent,
+    ): Promise<void> {
+        await this.handleEvent(event);
+    }
+
+    // Cập nhật feed hai bên khi seller đã tạo lại vận đơn hoàn.
+    @EventPattern(OrderEvents.RETURN_SHIPMENT_RETRY_STARTED)
+    async handleShipmentRetryStarted(
+        @Payload() event: ReturnChangedEvent,
+    ): Promise<void> {
+        await this.handleEvent(event);
+    }
+
     // Thông báo khi shop đã nhận kiện hàng hoàn.
     @EventPattern(OrderEvents.RETURN_RECEIVED)
     async handleReceived(@Payload() event: ReturnChangedEvent): Promise<void> {
