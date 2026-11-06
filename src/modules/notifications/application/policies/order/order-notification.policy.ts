@@ -2,6 +2,7 @@
 // Policy chỉ tạo nội dung hiển thị, không gửi email và không quyết định quyền truy cập order.
 
 import { Injectable } from '@nestjs/common';
+import { UserRole } from '@common/enums/user-role.enum';
 import {
     OrderCancelledEvent,
     OrderCreatedEvent,
@@ -104,6 +105,40 @@ export class OrderNotificationPolicy {
                 cancelReason: event.data.cancelReason,
             },
         );
+    }
+
+    // Gửi cảnh báo cho role ADMIN; nội dung chỉ có dữ liệu đơn và thanh toán, không mang thông tin tài khoản nhận hoàn.
+    buildCancelledForAdmin(
+        event: OrderCancelledEvent,
+    ): CreateNotificationInput {
+        const cancelReason = event.data.cancelReason?.trim().slice(0, 160);
+        const reason = cancelReason ? ` Lý do: ${cancelReason}.` : '';
+
+        return {
+            eventId: `${event.eventId}:admin`,
+            eventName: event.eventName,
+            eventVersion: event.eventVersion,
+            source: event.source,
+            category: NotificationCategory.ORDER,
+            type: 'order_cancelled_for_admin',
+            audiences: [
+                { type: NotificationAudienceType.ROLE, value: UserRole.ADMIN },
+            ],
+            title: 'Khách hàng đã hủy đơn hàng',
+            message: `Đơn #${event.data.orderNumber} đã bị khách hàng hủy (${event.data.paymentMethod}). Vui lòng kiểm tra trạng thái thanh toán và xử lý hoàn tiền nếu giao dịch đã được thu.${reason}`,
+            actionUrl: '/admin/finance',
+            badgeKey: 'admin.finance',
+            priority: NotificationPriority.HIGH,
+            entityType: 'order',
+            entityId: event.data.orderId,
+            metadata: {
+                orderNumber: event.data.orderNumber,
+                paymentMethod: event.data.paymentMethod,
+                cancelReason: cancelReason ?? null,
+            },
+            occurredAt: new Date(event.occurredAt),
+            expiresAt: this.createExpiryDate(event.occurredAt),
+        };
     }
 
     // Dùng chung các trường notification để event tạo customer/seller không bị lệch TTL hoặc mức ưu tiên.

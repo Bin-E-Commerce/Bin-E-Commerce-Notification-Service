@@ -81,6 +81,12 @@ export class OrderConsumer {
     ): Promise<void> {
         this.logger.log(`Received order cancelled event ${event.eventId}`);
 
+        // Lưu cảnh báo admin trước email side effects để họ vẫn nhận được việc cần kiểm tra hoàn tiền.
+        // eventId cố định theo order giúp Kafka retry không tạo cảnh báo admin trùng.
+        await this.notifications.createFromEvent(
+            this.policy.buildCancelledForAdmin(event),
+        );
+
         await this.createNotificationAndEmail(
             this.policy.buildCancelledForCustomer(event),
             event.data.customerUserId,
