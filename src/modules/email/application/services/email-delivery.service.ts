@@ -24,6 +24,9 @@ type OrderCreatedEmailInput = Parameters<
 type OrderCancelledEmailInput = Parameters<
     EmailService['sendOrderCancelledEmail']
 >[0];
+type RefundCompletedEmailInput = Parameters<
+    EmailService['sendRefundCompletedEmail']
+>[0];
 type ReturnEmailInput = Parameters<EmailService['sendReturnStatusEmail']>[0];
 type WalletFinanceEmailInput = Parameters<
     EmailService['sendWalletFinanceStatusEmail']
@@ -33,6 +36,7 @@ type EmailDeliveryKind =
     | 'ORDER_CREATED'
     | 'ORDER_CANCELLED'
     | 'RETURN_STATUS'
+    | 'REFUND_COMPLETED'
     | 'WALLET_FINANCE_STATUS';
 
 // Chừa một nhịp để feed realtime hoặc lần polling 30 giây cập nhật website trước email tài chính.
@@ -89,6 +93,14 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
         await this.enqueue(dedupeKey, 'ORDER_CANCELLED', input);
     }
 
+    // Lưu email hoàn tiền theo eventId để Kafka redelivery không gửi thư trùng và SMTP lỗi vẫn được retry.
+    async enqueueRefundCompleted(
+        dedupeKey: string,
+        input: RefundCompletedEmailInput,
+    ): Promise<void> {
+        await this.enqueue(dedupeKey, 'REFUND_COMPLETED', input);
+    }
+
     // Đưa email hoàn hàng vào outbox để các trạng thái return cũng không bị mất khi SMTP tạm thời lỗi.
     async enqueueReturnStatus(
         dedupeKey: string,
@@ -118,6 +130,7 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
             | ShipmentEmailInput
             | OrderCreatedEmailInput
             | OrderCancelledEmailInput
+            | RefundCompletedEmailInput
             | ReturnEmailInput
             | WalletFinanceEmailInput,
         delayMs = 0,
@@ -235,6 +248,12 @@ export class EmailDeliveryService implements OnModuleInit, OnModuleDestroy {
             case 'ORDER_CANCELLED':
                 await this.emailService.sendOrderCancelledEmail({
                     ...(payload as Omit<OrderCancelledEmailInput, 'to'>),
+                    to: job.to,
+                });
+                return;
+            case 'REFUND_COMPLETED':
+                await this.emailService.sendRefundCompletedEmail({
+                    ...(payload as Omit<RefundCompletedEmailInput, 'to'>),
                     to: job.to,
                 });
                 return;

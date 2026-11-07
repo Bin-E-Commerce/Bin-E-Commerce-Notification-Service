@@ -84,6 +84,11 @@ export class ReturnNotificationPolicy {
                     title: 'Yêu cầu hoàn hàng mới',
                     message: `Khách hàng yêu cầu hoàn hàng ${orderNumber}. Lý do: ${reason}. Số tiền dự kiến: ${event.data.refundAmount} đ.`,
                 };
+            case OrderEvents.RETURN_UPDATED:
+                return {
+                    title: 'Khách hàng đã cập nhật yêu cầu hoàn hàng',
+                    message: `Yêu cầu hoàn hàng ${orderNumber} đã được cập nhật. Lý do: ${reason}.${event.data.note ? ` Nội dung: ${event.data.note}` : ''} Số tiền dự kiến: ${event.data.refundAmount} đ.`,
+                };
             case OrderEvents.RETURN_APPROVED:
                 return {
                     title: 'Yêu cầu hoàn hàng đã được duyệt',

@@ -21,6 +21,7 @@ import {
     type OrderEmailItem,
     type OrderEmailRole,
 } from '@/modules/email/application/templates/orders/order.template';
+import { buildRefundCompletedTemplate } from '@/modules/email/application/templates/orders/refund-completed.template';
 import {
     buildShipmentStatusTemplate,
     type ShipmentEmailRole,
@@ -235,6 +236,29 @@ export class EmailService {
             input.to,
             template,
             'order cancelled',
+            attachments,
+        );
+    }
+
+    // Gửi email xác nhận khoản hoàn đã chuyển; số tiền và thời điểm lấy nguyên từ event snapshot đã được kiểm tra ở Order Service.
+    async sendRefundCompletedEmail(input: {
+        to: string;
+        orderNumber: string;
+        refundAmount: string;
+        occurredAt: string;
+        orderUrl: string;
+    }): Promise<void> {
+        const attachments = this.buildBrandAttachments();
+        const template = buildRefundCompletedTemplate({
+            ...input,
+            orderUrl: this.toWebUrl(input.orderUrl),
+            webBaseUrl: this.webBaseUrl,
+            logoCid: attachments.length > 0 ? this.logoCid : undefined,
+        });
+        await this.sendTemplateEmail(
+            input.to,
+            template,
+            'refund completed',
             attachments,
         );
     }

@@ -32,18 +32,27 @@ export function buildReturnStatusTemplate(
 ): EmailTemplate {
     const isSeller = input.role === 'seller';
     const isRequested = input.eventName === 'return.requested';
+    const isUpdated = input.eventName === 'return.updated';
     const statusLabel = getReturnStatusLabel(input.status);
     const reasonLabel = getReturnReasonLabel(input.reason);
     const title = isRequested
         ? isSeller
             ? 'Có yêu cầu hoàn hàng mới'
             : 'Yêu cầu hoàn hàng đã được gửi'
-        : 'Cập nhật yêu cầu hoàn hàng';
+        : isUpdated
+          ? isSeller
+              ? 'Khách hàng đã cập nhật yêu cầu hoàn hàng'
+              : 'Yêu cầu hoàn hàng đã được cập nhật'
+          : 'Cập nhật yêu cầu hoàn hàng';
     const message = isRequested
         ? isSeller
             ? 'Khách hàng vừa gửi yêu cầu hoàn hàng cho một sản phẩm của shop.'
             : 'Yêu cầu hoàn hàng của bạn đã được ghi nhận và đang chờ shop xử lý.'
-        : `${isSeller ? 'Yêu cầu hoàn hàng của shop' : 'Yêu cầu hoàn hàng của bạn'} vừa được cập nhật sang trạng thái ${statusLabel}.`;
+        : isUpdated
+          ? isSeller
+              ? 'Khách hàng vừa chỉnh sửa thông tin của yêu cầu hoàn hàng. Vui lòng xem lại lý do và bằng chứng mới.'
+              : 'Thông tin yêu cầu hoàn hàng của bạn đã được cập nhật.'
+          : `${isSeller ? 'Yêu cầu hoàn hàng của shop' : 'Yêu cầu hoàn hàng của bạn'} vừa được cập nhật sang trạng thái ${statusLabel}.`;
     const safeOrderNumber = escapeEmailHtml(input.orderNumber);
     const safeStatus = escapeEmailHtml(statusLabel);
     const safeReason = escapeEmailHtml(reasonLabel);

@@ -26,6 +26,21 @@ export class ReturnConsumer {
         await this.handleEvent(event);
     }
 
+    // Bản chỉnh sửa chỉ nhắc Seller; Customer vừa thực hiện thao tác và không cần nhận thông báo cho chính mình.
+    @EventPattern(OrderEvents.RETURN_UPDATED)
+    async handleUpdated(@Payload() event: ReturnChangedEvent): Promise<void> {
+        this.logger.log(`Received return update event ${event.eventId}`);
+        const sellerNotification = this.policy.buildForSeller(event);
+        if (sellerNotification && event.data.sellerUserId) {
+            await this.notifyUser(
+                event,
+                sellerNotification,
+                event.data.sellerUserId,
+                'seller',
+            );
+        }
+    }
+
     // Gửi email cho customer ngay sau khi Seller chấp nhận yêu cầu hoàn hàng.
     @EventPattern(OrderEvents.RETURN_APPROVED)
     async handleApproved(@Payload() event: ReturnChangedEvent): Promise<void> {
@@ -149,7 +164,10 @@ export class ReturnConsumer {
         role: 'customer' | 'seller',
     ): boolean {
         if (role === 'seller') {
-            return eventName === OrderEvents.RETURN_REQUESTED;
+            return (
+                eventName === OrderEvents.RETURN_REQUESTED ||
+                eventName === OrderEvents.RETURN_UPDATED
+            );
         }
 
         switch (eventName) {

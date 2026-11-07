@@ -16,6 +16,7 @@ export class EmailDelivery {
             'ORDER_CREATED',
             'ORDER_CANCELLED',
             'RETURN_STATUS',
+            'REFUND_COMPLETED',
             'WALLET_FINANCE_STATUS',
         ],
     })
@@ -24,6 +25,7 @@ export class EmailDelivery {
         | 'ORDER_CREATED'
         | 'ORDER_CANCELLED'
         | 'RETURN_STATUS'
+        | 'REFUND_COMPLETED'
         | 'WALLET_FINANCE_STATUS';
 
     @Prop({ required: true })
