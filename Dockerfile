@@ -38,10 +38,20 @@ RUN npm prune --omit=dev
 RUN mkdir -p node_modules/@common \
   && cp -R services/notification-service/dist/packages/common/. node_modules/@common/
 
-# npm có thể đặt dependency production riêng của workspace dưới thư mục nested
-# khi phiên bản dependency không thể hoist lên root; gom chúng vào root để Node
-# resolve được dependency từ dist/services/notification-service lúc runtime.
-RUN cp -R services/notification-service/node_modules/. node_modules/
+# Mongoose 9 của root có thể để Kareem 3 lồng trong thư mục package; chép đè
+# Mongoose 8 của Notification lên đó mà không dọn trước sẽ giữ dependency sai.
+# Xóa package đích để Node phân giải Kareem đúng theo dependency của Mongoose 8.
+RUN rm -rf node_modules/mongoose \
+  && cp -R services/notification-service/node_modules/. node_modules/ \
+  && node -e 'const fs = require("node:fs");
+const path = require("node:path");
+const mongoose = require("mongoose");
+const mongoosePath = require.resolve("mongoose");
+const kareemPath = require.resolve("kareem", { paths: [path.dirname(mongoosePath)] });
+const actual = JSON.parse(fs.readFileSync(path.join(path.dirname(kareemPath), "package.json"), "utf8")).version;
+const expected = require("mongoose/package.json").dependencies.kareem;
+if (actual !== expected) throw new Error("Mongoose resolved Kareem " + actual + ", expected " + expected);
+console.log("Verified Mongoose " + mongoose.version + " with Kareem " + actual);'
 
 # -----------------------------------------------------------------------------
 # Giai đoạn runtime: image non-root, chỉ giữ artifact HTTP/consumer và assets email.
